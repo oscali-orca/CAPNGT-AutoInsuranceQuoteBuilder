@@ -20,6 +20,7 @@ import org.springframework.security.web.context.SecurityContextRepository;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import com.example.javabackend.dto.QuoteConfigResponse;
@@ -69,6 +70,7 @@ public class CustomerController {
     @PostMapping("/session")
     public ResponseEntity<Map<String, String>> createSession(
             @RequestBody SessionLoginRequest login,
+            @RequestHeader("X-XSRF-TOKEN") String csrfToken,
             HttpServletRequest request,
             HttpServletResponse response) {
         if (login.username() == null || login.username().isBlank()
@@ -105,7 +107,9 @@ public class CustomerController {
 
     @DeleteMapping("/session")
     public ResponseEntity<Map<String, String>> deleteSession(
-            HttpServletRequest request, HttpServletResponse response) {
+            @RequestHeader("X-XSRF-TOKEN") String csrfToken,
+            HttpServletRequest request,
+            HttpServletResponse response) {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         sessionLogoutHandler.logout(request, response, authentication);
         cookieLogoutHandler.logout(request, response, authentication);

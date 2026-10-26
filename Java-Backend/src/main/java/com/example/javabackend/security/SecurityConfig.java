@@ -82,9 +82,12 @@ public class SecurityConfig {
                 )
                 .authenticationProvider(authenticationProvider)
                 .authorizeHttpRequests(auth -> auth
+                        .requestMatchers("/swagger-ui/**", "/swagger-ui.html", "/v3/api-docs",
+                                "/v3/api-docs/**", "/v3/api-docs.yaml").permitAll()
                         .requestMatchers("/api/csrf").permitAll()
-                        .requestMatchers(HttpMethod.POST, "/api/session").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/api/session").authenticated()
                         .requestMatchers(HttpMethod.DELETE, "/api/session").authenticated()
+                        .requestMatchers("/api/session").permitAll()
                         .anyRequest().authenticated()
                 )
                 .exceptionHandling(exceptions -> exceptions
