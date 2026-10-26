@@ -2,12 +2,17 @@ package com.example.javabackend.model;
 
 import com.example.javabackend.enums.PackageType;
 
-import java.util.UUID;
+import java.math.BigInteger;
+
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
+import org.hibernate.type.descriptor.jdbc.VarcharUUIDJdbcType;
 
 @lombok.Data
-public class Customer {
+public class saved_quote {
+    private VarcharUUIDJdbcType quote_reference;
+    private BigInteger customer_id;
+    private BigInteger rate_configuration_id;
     private int driver_age;
     private int vehicle_age;
     private int annual_mileage;
