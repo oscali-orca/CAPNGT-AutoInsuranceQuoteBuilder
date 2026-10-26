@@ -45,6 +45,10 @@ public class CustomerAccount implements UserDetails {
         return username;
     }
 
+    public String getDisplayName() {
+        return display_name;
+    }
+
     @Override
     public boolean isAccountNonExpired() { return true; }
     @Override

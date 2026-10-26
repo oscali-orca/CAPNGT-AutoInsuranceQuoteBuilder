@@ -8,6 +8,7 @@ import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.web.csrf.CsrfToken;
@@ -21,6 +22,9 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import com.example.javabackend.dto.QuoteConfigResponse;
+import com.example.javabackend.model.CustomerAccount;
+import com.example.javabackend.service.QuoteConfigService;
 
 import java.security.Principal;
 import java.util.Map;
@@ -31,13 +35,16 @@ public class CustomerController {
 
     private final AuthenticationProvider authenticationProvider;
     private final SecurityContextRepository securityContextRepository;
+    private final QuoteConfigService quoteConfigService;
     private final LogoutHandler sessionLogoutHandler = new SecurityContextLogoutHandler();
     private final LogoutHandler cookieLogoutHandler = new CookieClearingLogoutHandler("JSESSIONID");
 
     public CustomerController(AuthenticationProvider authenticationProvider,
-                              SecurityContextRepository securityContextRepository) {
+                              SecurityContextRepository securityContextRepository,
+                              QuoteConfigService quoteConfigService) {
         this.authenticationProvider = authenticationProvider;
         this.securityContextRepository = securityContextRepository;
+        this.quoteConfigService = quoteConfigService;
     }
 
     @GetMapping("/csrf")
@@ -45,14 +52,18 @@ public class CustomerController {
         return Map.of("token", csrfToken.getToken());
     }
 
-    @GetMapping("/me")
-    public Map<String, String> currentUser(Principal principal) {
-        return Map.of("username", principal.getName());
+    @GetMapping("/session")
+    public Map<String, String> currentSession(@AuthenticationPrincipal CustomerAccount account) {
+        return Map.of("display_name", account.getDisplayName());
     }
 
-    @GetMapping("/session")
-    public Map<String, String> currentSession(Principal principal) {
-        return Map.of("username", principal.getName());
+    @GetMapping("/quote-config")
+    public ResponseEntity<?> activeQuoteConfig() {
+        return quoteConfigService.findActiveConfiguration()
+                .<ResponseEntity<?>>map(ResponseEntity::ok)
+                .orElseGet(() -> ResponseEntity.status(HttpStatus.NOT_FOUND).body(Map.of(
+                        "code", "ACTIVE_QUOTE_CONFIG_NOT_FOUND",
+                        "message", "No active rate configuration is available")));
     }
 
     @PostMapping("/session")
