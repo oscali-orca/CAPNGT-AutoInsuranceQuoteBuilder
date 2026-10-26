@@ -1,7 +1,8 @@
-import {useState} from "react";
+import {useState, useEffect, type FormEvent} from "react";
 import {useQuoteDraft} from "../context/QuoteDraftContext";
 import type {RiskDetails} from "../types/quote";
 import {useNavigate} from "react-router-dom";
+import {getCurrentSession, getQuoteConfig} from "../services/quoteApi";
 
 type RiskField = keyof RiskDetails; //4 fields that are customer's risk details, keyof makes ts type w/property names of interface driverAge|vehicleAge\annualMileage|priorClaims
 type FormValues = Record<RiskField, string>; //Record makes object type w/ <property key, porperty val> 
@@ -78,7 +79,7 @@ function validateField(
 }
 
 export default function RiskDetailsForm() {
-    const {riskDetails, setRiskDetails} = useQuoteDraft(); //shared quote draft, which the other screens can access through context
+    const {riskDetails, setRiskDetails, backendErrors, setBackendErrors,} = useQuoteDraft(); //shared quote draft, which the other screens can access through context
 
     const navigate = useNavigate(); //react router hook to move to next screen
 
@@ -93,6 +94,26 @@ export default function RiskDetailsForm() {
 
     const [errors, setErrors] = useState<FormErrors>({}); //stores field specific validation messages
 
+    //state error info from backend
+    const[apiError, setApiError] = useState("");
+    const [customerName, setCustomerName] = useState("");
+
+    //load signed in customer and their active quote information
+    useEffect(() => {
+        async function loadInitalData() {
+            try{
+                const session = await getCurrentSession();
+                setCustomerName(session.display_name);
+
+                const quoteConfig = await getQuoteConfig();
+                console.log("Active quote config:", quoteConfig);
+            } catch (error) {
+                setApiError(error instanceof Error? error.message : "Could not load quote information");
+            }
+        }
+        loadInitalData();
+    }, []);
+
     //runs whenever user edits input
     function handleChange(field: RiskField, value: string) {
         setValues((previous) => ({ //updates only field that changed
@@ -106,10 +127,16 @@ export default function RiskDetailsForm() {
             ...previous,
             [field]: undefined,
         }));
+
+        //clear backenderror when user fixes input
+        setBackendErrors((previous) => ({
+            ...previous,
+            [field]: undefined,
+        }));
     }
 
     //runs when user clicks continue to coverage
-    function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
+    function handleSubmit(event: FormEvent<HTMLFormElement>) {
         event.preventDefault();
 
         const nextErrors: FormErrors = {};
@@ -138,6 +165,7 @@ export default function RiskDetailsForm() {
             priorClaims: Number(values.priorClaims),
         };
 
+        setBackendErrors({}); //clear any previous backend errors before submitting
         setRiskDetails(validatedDetails); //store valid inputs in shared context to use later
         navigate("/coverage"); //move to coverage builder screen after submit
 
@@ -148,11 +176,24 @@ export default function RiskDetailsForm() {
         <section style={{ maxWidth: "900px", margin: "40px auto", padding: "0 24px",}}>
             <h1> Vehicle & Driver Details</h1>
             <p>Step 1: Enter the details for your training estimate.</p>
+            
+            {/*show signed in customer */}
+            {customerName && <p>Customer: {customerName}</p>}
 
+            {/*show errors if API request fails*/}
+            {apiError && (
+                <p role="alert" style={{ color: "crimson" }}>
+                    {apiError}
+                </p>
+            )}
+            
             {/*noValidate lets us use custom field messages*/}
             <form onSubmit={handleSubmit} noValidate style={{maxWidth: "500px", margin: "30px auto",}}> 
                 {fields.map(field => {
                     const rule=fieldRules[field];
+
+                    //use frontend error first, then show backend error
+                    const errorMessage = errors[field] ?? backendErrors[field];
 
                     return (
                         <div key={field} style={{marginBottom: "20px"}}>
@@ -168,7 +209,7 @@ export default function RiskDetailsForm() {
                                 onChange={(event) => 
                                     handleChange(field, event.target.value)
                                 }
-                                aria-invalid={Boolean(errors[field])}
+                                aria-invalid={Boolean(errorMessage)}
                                 aria-describedby={`${field}-message`}
                                 style={{
                                     display:"block",
@@ -180,10 +221,8 @@ export default function RiskDetailsForm() {
                             />
                             {/*display error message or hint below the input*/}
                             <small id={`${field}-message`}>
-                                {errors[field] ? (
-                                    <span role = "alert" style={{ color: "crimson"}}>
-                                        {errors[field]}
-                                    </span>
+                                {errorMessage ? (
+                                    <span style={{ color: "crimson" }}>{errorMessage}</span>
                                 ) : (
                                     rule.hint
                                 )}
