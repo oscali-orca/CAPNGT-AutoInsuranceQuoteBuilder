@@ -1,0 +1,638 @@
+.coverage-page {
+  width: min(900px, calc(100% - 48px));
+  margin: 40px auto;
+  color: var(--text-h);
+  text-align: left;
+}
+
+.coverage-tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 20px;
+  margin-bottom: 24px;
+  border-bottom: 1px solid var(--border);
+}
+
+.coverage-tabs a {
+  display: inline-flex;
+  align-items: center;
+  padding: 0 0 9px;
+  border-bottom: 2px solid transparent;
+  color: var(--text);
+  font-size: 13px;
+  text-decoration: none;
+}
+
+.coverage-tabs a:hover {
+  color: var(--text-h);
+}
+
+.coverage-tabs a.active {
+  border-bottom-color: var(--accent);
+  color: var(--accent);
+  font-weight: 600;
+}
+
+.coverage-page-heading {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 20px;
+  margin-bottom: 25px;
+}
+
+.coverage-page h1 {
+  margin: 0 0 8px;
+  color: var(--text-h);
+  font-size: clamp(34px, 5vw, 48px);
+  font-weight: 500;
+  letter-spacing: -1px;
+  line-height: 1.15;
+}
+
+.coverage-subtitle {
+  color: var(--text);
+  font-size: 16px;
+  line-height: 1.55;
+}
+
+.coverage-button {
+  display: inline-flex;
+  min-height: 42px;
+  flex: 0 0 auto;
+  align-items: center;
+  justify-content: center;
+  padding: 8px 14px;
+  border: 1px solid var(--border);
+  border-radius: 5px;
+  background: #fff;
+  color: var(--text-h);
+  cursor: pointer;
+  font: inherit;
+  font-size: 14px;
+  text-decoration: none;
+  transition: border-color 150ms ease, background-color 150ms ease;
+}
+
+.coverage-button:hover {
+  border-color: var(--accent-border);
+  background: var(--accent-bg);
+}
+
+.coverage-button:focus-visible,
+.coverage-tabs a:focus-visible,
+.coverage-package-card:focus-within,
+.coverage-builder-option:focus-within,
+.coverage-deductible-control select:focus-visible,
+.coverage-save-controls input:focus-visible {
+  outline: 2px solid var(--accent-border);
+  outline-offset: 3px;
+}
+
+.coverage-button-dark {
+  border-color: var(--accent);
+  background: var(--accent);
+  color: #fff;
+}
+
+.coverage-button-dark:hover {
+  border-color: #8426c9;
+  background: #8426c9;
+  color: #fff;
+}
+
+.coverage-button:disabled {
+  cursor: not-allowed;
+  opacity: 0.55;
+}
+
+.coverage-risk-summary {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px 22px;
+  margin: 0 0 18px;
+  padding: 0 0 17px;
+  border-bottom: 1px solid var(--border);
+}
+
+.coverage-risk-summary > div {
+  display: flex;
+  gap: 5px;
+  color: var(--text);
+  font-size: 13px;
+}
+
+.coverage-risk-summary dt,
+.coverage-risk-summary dd {
+  margin: 0;
+}
+
+.coverage-risk-summary dd {
+  color: var(--text-h);
+}
+
+.coverage-builder-options {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.coverage-builder-packages {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.coverage-builder-card {
+  display: flex;
+  min-width: 0;
+  min-height: 250px;
+  flex-direction: column;
+  gap: 10px;
+  padding: 16px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: #fff;
+  color: var(--text-h);
+  cursor: pointer;
+  transition: border-color 150ms ease, background-color 150ms ease;
+}
+
+.coverage-builder-card:hover {
+  border-color: var(--accent-border);
+}
+
+.coverage-builder-card.is-selected {
+  border-color: var(--accent);
+  background: var(--accent-bg);
+}
+
+.coverage-builder-card:focus-within {
+  outline: 2px solid var(--accent-border);
+  outline-offset: 3px;
+}
+
+.coverage-builder-card-heading {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  font-size: 16px;
+}
+
+.coverage-builder-card-heading input,
+.coverage-package-select input {
+  width: 17px;
+  height: 17px;
+  flex: 0 0 auto;
+  margin: 0;
+  accent-color: var(--accent);
+}
+
+.coverage-builder-card-inclusions {
+  min-height: 32px;
+  color: var(--text);
+  font-size: 12px;
+}
+
+.coverage-builder-card-breakdown {
+  display: grid;
+  gap: 7px;
+  margin: 0;
+  padding: 10px 0;
+  border-top: 1px solid var(--border);
+  color: var(--text);
+  font-size: 12px;
+}
+
+.coverage-builder-card-breakdown > div {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.coverage-builder-card-breakdown dt,
+.coverage-builder-card-breakdown dd {
+  margin: 0;
+}
+
+.coverage-builder-card-breakdown dd {
+  color: var(--text-h);
+  text-align: right;
+}
+
+.coverage-builder-card-price {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 8px;
+  margin-top: auto;
+  padding-top: 10px;
+  border-top: 1px solid var(--border);
+  color: var(--text-h);
+  font-size: 18px;
+  font-weight: 600;
+}
+
+.coverage-builder-card-price small {
+  color: var(--text);
+  font-size: 11px;
+  font-weight: 400;
+}
+
+.coverage-deductible-control {
+  display: flex;
+  align-items: flex-end;
+  gap: 16px;
+  margin-bottom: 19px;
+}
+
+.coverage-deductible-control label {
+  display: flex;
+  width: min(100%, 300px);
+  flex-direction: column;
+  gap: 7px;
+  color: var(--text-h);
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.coverage-deductible-control select {
+  width: 100%;
+  min-height: 43px;
+  padding: 8px 11px;
+  border: 1px solid #c9c5cf;
+  border-radius: 5px;
+  background: #fff;
+  color: var(--text-h);
+  font: inherit;
+  font-weight: 400;
+}
+
+.coverage-deductible-control > p {
+  padding-bottom: 10px;
+  color: var(--text);
+  font-size: 13px;
+}
+
+.coverage-builder-deductible {
+  align-items: flex-start;
+  flex-direction: column;
+  gap: 8px;
+  margin: 8px 0 0;
+}
+
+.coverage-builder-deductible label {
+  width: 100%;
+}
+
+.coverage-builder-deductible > p {
+  padding: 0;
+}
+
+.coverage-breakdown {
+  margin-top: 18px;
+  padding: 18px;
+  border: 1px solid var(--border);
+  border-radius: 7px;
+  background: #fbfafc;
+}
+
+.coverage-breakdown h2,
+.coverage-save h2 {
+  margin: 0 0 10px;
+  color: var(--text-h);
+  font-size: 16px;
+  font-weight: 600;
+}
+
+.coverage-price-rows {
+  margin: 0;
+}
+
+.coverage-price-rows > div {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 8px 0;
+  border-bottom: 1px solid var(--border);
+  color: var(--text);
+  font-size: 13px;
+}
+
+.coverage-price-rows dt,
+.coverage-price-rows dd {
+  margin: 0;
+}
+
+.coverage-price-rows dd {
+  flex: 0 0 auto;
+  color: var(--text-h);
+  text-align: right;
+}
+
+.coverage-price-rows .coverage-annual-total {
+  border-bottom: 0;
+  color: var(--text-h);
+  font-size: 15px;
+  font-weight: 700;
+}
+
+.coverage-annual-total dd {
+  color: var(--accent);
+  font-size: 17px;
+}
+
+.coverage-breakdown-note {
+  margin: 8px 0 0;
+  color: var(--text);
+  font-size: 12px;
+}
+
+.coverage-compare-button {
+  align-self: flex-start;
+  margin-top: 6px;
+}
+
+.coverage-comparison .coverage-options {
+  padding: 0;
+  border: 0;
+  background: transparent;
+  box-shadow: none;
+}
+
+.coverage-comparison .coverage-deductible-control {
+  margin-bottom: 12px;
+}
+
+.coverage-comparison .coverage-deductible-control label {
+  width: min(100%, 260px);
+}
+
+.coverage-comparison .coverage-package-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  border-block: 1px solid var(--border);
+}
+
+.coverage-comparison .coverage-package-card {
+  display: grid;
+  grid-template-columns: minmax(125px, 0.9fr) minmax(120px, 1fr) minmax(100px, 0.8fr) minmax(120px, auto);
+  min-height: 76px;
+  align-items: center;
+  gap: 8px 14px;
+  padding: 12px 14px;
+  border: 0;
+  border-bottom: 1px solid var(--border);
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+  color: var(--text-h);
+  cursor: pointer;
+}
+
+.coverage-comparison .coverage-package-card:last-child {
+  border-bottom: 0;
+}
+
+.coverage-comparison .coverage-package-card:hover {
+  background: rgba(170, 59, 255, 0.04);
+}
+
+.coverage-comparison .coverage-package-card.is-selected {
+  padding: 12px 14px;
+  border-left: 3px solid var(--accent);
+  background: var(--accent-bg);
+}
+
+.coverage-comparison .coverage-package-select {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--text-h);
+  font-size: 15px;
+}
+
+.coverage-comparison-inclusions,
+.coverage-comparison-deductible {
+  color: var(--text);
+  font-size: 12px;
+}
+
+.coverage-comparison-deductible strong {
+  color: var(--text-h);
+  font-weight: 500;
+}
+
+.coverage-comparison .coverage-package-price {
+  display: flex;
+  align-items: flex-end;
+  flex-direction: column;
+  gap: 2px;
+  margin: 0;
+}
+
+.coverage-comparison .coverage-package-price strong {
+  font-size: 19px;
+}
+
+.coverage-comparison .coverage-package-price span {
+  color: var(--text);
+  font-size: 11px;
+}
+
+.coverage-comparison .coverage-breakdown,
+.coverage-comparison .coverage-save {
+  margin-top: 16px;
+  padding: 14px 0 0;
+  border: 0;
+  border-top: 1px solid var(--border);
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+}
+
+.coverage-comparison .coverage-breakdown h2,
+.coverage-comparison .coverage-save h2 {
+  margin-bottom: 7px;
+  font-size: 17px;
+}
+
+.coverage-comparison .coverage-price-rows > div {
+  padding: 6px 0;
+  font-size: 12px;
+}
+
+.coverage-comparison .coverage-breakdown-note,
+.coverage-comparison .coverage-save-note {
+  font-size: 11px;
+}
+
+.coverage-save-form > label {
+  display: block;
+  margin-bottom: 7px;
+  color: var(--text-h);
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.coverage-save-controls {
+  display: flex;
+  gap: 10px;
+}
+
+.coverage-save-controls input {
+  min-width: 0;
+  min-height: 42px;
+  flex: 1;
+  padding: 8px 11px;
+  border: 1px solid #c9c5cf;
+  border-radius: 5px;
+  color: var(--text-h);
+  font: inherit;
+  font-size: 14px;
+}
+
+.coverage-comparison .coverage-save-controls input {
+  min-height: 38px;
+}
+
+.coverage-save-note,
+.coverage-save-message {
+  margin: 8px 0 0;
+  color: var(--text);
+  font-size: 12px;
+}
+
+.coverage-save-message.is-success {
+  color: #176b36;
+}
+
+.coverage-save-message.is-error,
+.coverage-status.coverage-error {
+  color: #9b2d27;
+}
+
+.coverage-footnote {
+  margin: 14px 0 0;
+  color: var(--text);
+  font-size: 13px;
+  line-height: 1.55;
+}
+
+.coverage-status {
+  display: flex;
+  min-height: 170px;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  border: 1px solid var(--border);
+  border-radius: 7px;
+  color: var(--text);
+  font-size: 14px;
+}
+
+.coverage-status.coverage-error {
+  flex-direction: column;
+}
+
+.coverage-error p {
+  margin: 0;
+}
+
+.coverage-spinner {
+  width: 18px;
+  height: 18px;
+  border: 2px solid var(--accent-bg);
+  border-top-color: var(--accent);
+  border-radius: 50%;
+  animation: coverage-spin 700ms linear infinite;
+}
+
+.coverage-empty-state {
+  display: flex;
+  min-height: 60vh;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: center;
+  gap: 12px;
+}
+
+.coverage-empty-state p {
+  color: var(--text);
+}
+
+@keyframes coverage-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@media (max-width: 760px) {
+  .coverage-page {
+    width: min(100% - 32px, 620px);
+    margin-top: 28px;
+  }
+
+  .coverage-builder-packages {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 700px) {
+  .coverage-comparison .coverage-package-card {
+    grid-template-columns: minmax(0, 1fr) auto;
+  }
+
+  .coverage-comparison-inclusions,
+  .coverage-comparison-deductible {
+    grid-column: 1;
+  }
+
+  .coverage-comparison .coverage-package-price {
+    grid-column: 2;
+    grid-row: 1 / span 3;
+  }
+
+  .coverage-comparison .coverage-save-controls {
+    align-items: stretch;
+    flex-direction: column;
+  }
+}
+
+@media (max-width: 520px) {
+  .coverage-page-heading {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .coverage-deductible-control {
+    align-items: stretch;
+    flex-direction: column;
+    gap: 7px;
+  }
+
+  .coverage-deductible-control label {
+    width: 100%;
+  }
+
+  .coverage-deductible-control > p {
+    padding: 0;
+  }
+
+  .coverage-risk-summary {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 9px 12px;
+  }
+
+  .coverage-price-rows > div {
+    gap: 9px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .coverage-spinner {
+    animation: none;
+  }
+}
