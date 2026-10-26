@@ -1,5 +1,6 @@
 HELP.md
 target/
+.env
 .mvn/wrapper/maven-wrapper.jar
 !**/src/main/**/target/
 !**/src/test/**/target/
@@ -32,5 +33,4 @@ build/
 ### VS Code ###
 .vscode/
 
-### Local database credentials (see .env.example) ###
-.env
+.idea/
