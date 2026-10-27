@@ -1,0 +1,292 @@
+
+.sq {
+  max-width: 1440px;
+  margin: 0 auto;
+  padding: 16px 22px;
+  color: #252a27;
+  font-size: 14px;
+  line-height: 1.4;
+}
+
+.sq h2 {
+  margin: 0 0 4px;
+  font-size: 24px;
+  font-weight: 650;
+  letter-spacing: -0.5px;
+}
+
+.sq h3 {
+  margin: 20px 0 8px;
+  font-size: 17px;
+  font-weight: 600;
+}
+
+.sq .sub {
+  color: #687069;
+  margin: 0;
+  font-size: 13px;
+}
+
+.sq .muted,
+.sq .hint,
+.sq .formula {
+  color: #737a74;
+  font-size: 12px;
+}
+
+.sq .head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-bottom: 16px;
+}
+
+.sq button {
+  font: inherit;
+  font-size: 13px;
+  padding: 8px 13px;
+  border: 1px solid #d4d8d3;
+  border-radius: 6px;
+  background: #fff;
+  color: #18266c;
+  cursor: pointer;
+  transition: background 0.15s, border-color 0.15s;
+}
+
+.sq button:hover:not(:disabled) {
+  background: #f3f5f2;
+  border-color: #aeb7ae;
+}
+
+.sq button.primary {
+  background: #303a47;
+  border-color: #303a47;
+  color: #fff;
+}
+
+.sq button.primary:hover:not(:disabled) {
+  background: #24382c;
+}
+
+.sq button.link {
+  border: 0;
+  background: none;
+  padding: 2px 0;
+  color: #30473a;
+  text-decoration: underline;
+}
+
+.sq button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.sq :focus-visible {
+  outline: 2px solid #527b60;
+  outline-offset: 2px;
+}
+
+.sq .wrap {
+  width: 100%;
+  overflow-x: auto;
+  border: 1px solid #e1e5df;
+  border-radius: 8px;
+}
+
+.sq table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+
+.sq th {
+  background: #f3f5f1;
+  color: #586159;
+  text-align: left;
+  padding: 10px 12px;
+  font-size: 12px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.sq td {
+  padding: 10px 12px;
+  border-bottom: 1px solid #e8ebe6;
+  vertical-align: middle;
+}
+
+.sq tbody tr:last-child td {
+  border-bottom: 0;
+}
+
+.sq tbody tr:hover {
+  background: #fafbf9;
+}
+
+.sq td small {
+  display: block;
+  color: #737a74;
+  font-size: 11px;
+  margin-top: 3px;
+}
+
+.sq .cmp th[scope="row"] {
+  width: 22%;
+}
+
+.sq .cmp td,
+.sq .cmp thead th {
+  border-left: 1px solid #e8ebe6;
+}
+
+.sq .cmp .sel {
+  background: #f3f6f1;
+}
+
+.sq .cmp tr.total td,
+.sq .cmp tr.total th {
+  font-weight: 700;
+}
+
+.sq .alert {
+  border-left: 3px solid #b3261e;
+  border-radius: 4px;
+  background: #fff1ef;
+  padding: 9px 12px;
+  margin: 12px 0;
+  font-size: 13px;
+}
+
+.sq .note {
+  border: 1px solid #e1e5df;
+  border-radius: 6px;
+  background: #f6f7f4;
+  padding: 10px 12px;
+  margin: 0 0 14px;
+  font-size: 13px;
+}
+
+.sq .strip {
+  display: flex;
+  gap: 22px;
+  flex-wrap: wrap;
+  padding: 10px 0;
+  border-bottom: 1px solid #e1e5df;
+  margin-bottom: 14px;
+  font-size: 12px;
+}
+
+.sq .strip span {
+  color: #737a74;
+}
+
+.sq .strip b {
+  font-weight: 600;
+  color: #303630;
+  margin-left: 4px;
+}
+
+.sq .layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 280px;
+  gap: 22px;
+  align-items: start;
+}
+
+.sq .fields {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px 18px;
+}
+
+.sq .aside {
+  border: 1px solid #e1e5df;
+  border-radius: 8px;
+  background: #f6f7f4;
+  padding: 14px;
+}
+
+.sq .aside h3 {
+  margin-top: 0;
+}
+
+.sq label.field {
+  display: block;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.sq label.field input,
+.sq label.field select {
+  display: block;
+  width: 100%;
+  box-sizing: border-box;
+  margin: 5px 0 3px;
+  padding: 9px 10px;
+  font: inherit;
+  font-size: 13px;
+  border: 1px solid #d2d8d0;
+  border-radius: 5px;
+  background: #fff;
+  color: #252a27;
+}
+
+.sq label.field input:focus,
+.sq label.field select:focus {
+  border-color: #527b60;
+  outline: none;
+  box-shadow: 0 0 0 2px #527b6020;
+}
+
+.sq .hint {
+  display: block;
+  font-weight: 400;
+  margin-top: 3px;
+}
+
+.sq .err {
+  color: #b3261e;
+  font-size: 12px;
+  font-weight: 400;
+}
+
+.sq .actions {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-top: 16px;
+}
+
+.sq .formula {
+  margin: 8px 0 0;
+}
+
+@media (max-width: 760px) {
+  .sq {
+    padding: 12px;
+  }
+
+  .sq .layout {
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
+
+  .sq .fields {
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+
+  .sq .head {
+    align-items: flex-start;
+  }
+
+  .sq .strip {
+    gap: 12px;
+  }
+
+  .sq .hide-sm {
+    display: none;
+  }
+}
