@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState, type FormEvent } from 'react';
-import './SavedQuotes.css';
+import './savedQuotes.css';
 import { ApiError, compare, duplicateQuote, factors, getQuote, listQuotes, saveQuote } from '../services/savedQuotesApi';
 import type { Breakdown, PackageCode, QuoteDraft, RiskInputs, SavedQuoteDetail } from '../types/savedQuotes';
 

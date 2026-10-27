@@ -9,6 +9,9 @@ export default function CoverageTabs() {
       <NavLink to="/comparison">
         Compare packages
       </NavLink>
+      <NavLink to="/saved-quotes">
+        Saved quotes
+      </NavLink>
     </nav>
   );
 }
