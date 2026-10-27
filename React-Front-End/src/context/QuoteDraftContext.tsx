@@ -8,7 +8,11 @@ import {
     type SetStateAction,
 } from "react";
 
-import type {RiskDetails} from "../types/quote";
+import type {
+    ComparisonDeductible,
+    CoveragePackage,
+    RiskDetails,
+} from "../types/quote";
 
 //backend valildation errors assoicated with four inputs
 //fields are optional bc backend may only reject a few fields
@@ -17,6 +21,10 @@ export type RiskErrors = Partial<Record<keyof RiskDetails, string>>;
 interface QuoteDraftContextType {
     riskDetails: RiskDetails | null; //null means user didnt submit form yet
     setRiskDetails: (details: RiskDetails | null) => void; //either save validated details or clear draft
+    selectedPackage: CoveragePackage;
+    setSelectedPackage: (coveragePackage: CoveragePackage) => void;
+    comparisonDeductible: ComparisonDeductible;
+    setComparisonDeductible: (deductible: ComparisonDeductible) => void;
 
     //backend errors & function to update them for form
     backendErrors: RiskErrors;
@@ -34,12 +42,26 @@ export function QuoteDraftProvider({ /*makes risk details available to component
 }) {
     //shared risk inputs
     const [riskDetails, setRiskDetails] = useState<RiskDetails | null>(null); /*useState stores risk details*/
+    const [selectedPackage, setSelectedPackage] = useState<CoveragePackage>("STANDARD");
+    const [comparisonDeductible, setComparisonDeductible] =
+        useState<ComparisonDeductible>(1000);
 
     //shared backend validation errors
     const [backendErrors, setBackendErrors] = useState<RiskErrors>({});
     
     return (
-        <QuoteDraftContext.Provider value={{ riskDetails, setRiskDetails, backendErrors, setBackendErrors,}}>
+        <QuoteDraftContext.Provider
+            value={{
+                riskDetails,
+                setRiskDetails,
+                selectedPackage,
+                setSelectedPackage,
+                comparisonDeductible,
+                setComparisonDeductible,
+                backendErrors,
+                setBackendErrors,
+            }}
+        >
             {children}
         </QuoteDraftContext.Provider>
     );

@@ -4,3 +4,7 @@ export interface RiskDetails{ /*defining structure (required fields) of riskdeta
     annualMileage: number;
     priorClaims: number;
 }
+
+export type CoveragePackage = "BASIC" | "STANDARD" | "ENHANCED";
+
+export type ComparisonDeductible = 500 | 1000 | 2000;
