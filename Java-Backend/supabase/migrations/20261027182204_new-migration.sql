@@ -2,7 +2,7 @@ INSERT INTO rate_configuration (version_code,
                                 description,
                                 currency,
                                 is_active,
-                                config);
+                                config)
 VALUES ('TRAINING-1',
         'Fictional pricing rules for training exercise',
         'USD',
@@ -52,4 +52,3 @@ VALUES ('TRAINING-1',
             "2000": 0.70
           }
         }'::jsonb);
-
