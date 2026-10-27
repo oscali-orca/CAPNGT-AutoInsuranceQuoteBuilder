@@ -7,6 +7,7 @@ import {
 } from "../services/pricing";
 import type { ComparisonDeductible, CoveragePackage } from "../types/quote";
 import { useComparisonPricing } from "../hooks/useComparisonPricing";
+import { saveQuote } from "../services/savedQuotesApi";
 import CoverageTabs from "./CoverageTabs";
 import "./CoverageBuilder.css";
 
@@ -23,7 +24,6 @@ const PACKAGE_DETAILS: Record<
 };
 
 const DEDUCTIBLES: ComparisonDeductible[] = [500, 1000, 2000];
-const SAVED_QUOTES_STORAGE_KEY = "auto-insurance-saved-quotes";
 const currency = new Intl.NumberFormat("en-US", {
   style: "currency",
   currency: "USD",
@@ -104,6 +104,7 @@ export default function CoverageComparison() {
     type: "success" | "error";
     text: string;
   } | null>(null);
+  const [isSaving, setIsSaving] = useState(false);
 
   if (!riskDetails) {
     return (
@@ -117,44 +118,21 @@ export default function CoverageComparison() {
     );
   }
 
-  function handleSaveQuote(event: FormEvent<HTMLFormElement>) {
+  async function handleSaveQuote(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     const name = quoteName.trim();
-    if (!name || !response) return;
+    if (!name || !response || isSaving) return;
 
-    const savedQuote = {
-      name,
-      createdAt: new Date().toISOString(),
-      selectedPackage,
-      riskInputs: { ...response.risk_inputs },
-      comparisonDeductible: response.comparison_deductible,
-      rateConfiguration: { ...response.rate_configuration },
-      packages: Object.fromEntries(
-        COVERAGE_PACKAGES.map((packageId) => [
-          packageId,
-          {
-            ...response.packages[packageId],
-            factors: response.packages[packageId].factors.map((factor) => ({
-              ...factor,
-            })),
-            add_on_costs: { ...response.packages[packageId].add_on_costs },
-          },
-        ]),
-      ),
-    };
-
+    setIsSaving(true);
     try {
-      const savedQuotesJson = localStorage.getItem(SAVED_QUOTES_STORAGE_KEY);
-      const savedQuotes: unknown = savedQuotesJson
-        ? JSON.parse(savedQuotesJson)
-        : [];
-      if (!Array.isArray(savedQuotes)) {
-        throw new Error("Saved quote data is not in the expected format.");
-      }
-
-      localStorage.setItem(
-        SAVED_QUOTES_STORAGE_KEY,
-        JSON.stringify([...savedQuotes, savedQuote]),
+      await saveQuote(
+        {
+          name,
+          packageCode: selectedPackage,
+          inputs: response.risk_inputs,
+          deductible: response.comparison_deductible,
+        },
+        crypto.randomUUID(),
       );
       setSaveMessage({
         type: "success",
@@ -168,6 +146,8 @@ export default function CoverageComparison() {
             ? `Could not save quote: ${saveError.message}`
             : "Could not save quote. Please try again.",
       });
+    } finally {
+      setIsSaving(false);
     }
   }
 
@@ -274,7 +254,10 @@ export default function CoverageComparison() {
                       <input
                         checked={isSelected}
                         name="selected-coverage-package"
-                        onChange={() => setSelectedPackage(packageId)}
+                        onChange={() => {
+                          setSelectedPackage(packageId);
+                          setSaveMessage(null);
+                        }}
                         type="radio"
                         value={packageId}
                       />
@@ -325,10 +308,12 @@ export default function CoverageComparison() {
                   />
                   <button
                     className="coverage-button coverage-button-dark"
-                    disabled={!quoteName.trim()}
+                    disabled={!quoteName.trim() || isSaving}
                     type="submit"
                   >
-                    Save {PACKAGE_DETAILS[selectedPackage].name} quote
+                    {isSaving
+                      ? "Saving…"
+                      : `Save ${PACKAGE_DETAILS[selectedPackage].name} quote`}
                   </button>
                 </div>
                 <p className="coverage-save-note">
@@ -336,12 +321,19 @@ export default function CoverageComparison() {
                   version as a snapshot in this browser.
                 </p>
                 {saveMessage && (
-                  <p
-                    className={`coverage-save-message is-${saveMessage.type}`}
-                    role={saveMessage.type === "error" ? "alert" : "status"}
-                  >
-                    {saveMessage.text}
-                  </p>
+                  <>
+                    <p
+                      className={`coverage-save-message is-${saveMessage.type}`}
+                      role={saveMessage.type === "error" ? "alert" : "status"}
+                    >
+                      {saveMessage.text}
+                    </p>
+                    {saveMessage.type === "success" && (
+                      <Link className="coverage-button" to="/saved-quotes">
+                        View saved quotes
+                      </Link>
+                    )}
+                  </>
                 )}
               </form>
             </section>
