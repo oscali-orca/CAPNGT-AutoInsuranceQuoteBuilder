@@ -99,11 +99,11 @@ public class SavedQuoteService {
     private void validate(SaveQuoteRequest request) {
         if (request == null || request.pricingInputs() == null || request.selectedPackage() == null
                 || request.saveRequestKey() == null) {
-            throw new IllegalArgumentException("pricing_inputs, selected_package, and save_request_key are required");
+            throw new IllegalArgumentException("pricingInputs, selectedPackage, and saveRequestKey are required");
         }
         if (request.quoteName() == null || request.quoteName().isBlank()
                 || request.quoteName().strip().length() > MAX_QUOTE_NAME_LENGTH) {
-            throw new IllegalArgumentException("quote_name must contain 1 to 100 characters");
+            throw new IllegalArgumentException("quoteName must contain 1 to 100 characters");
         }
     }
 

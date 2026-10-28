@@ -44,7 +44,7 @@ public class SavedQuoteController {
     @ExceptionHandler(HttpMessageNotReadableException.class)
     public ResponseEntity<ProblemDetail> handleMalformedRequest() {
         return ResponseEntity.badRequest().body(ProblemDetail.forStatusAndDetail(HttpStatus.BAD_REQUEST,
-                "Request body must contain valid JSON, a UUID save_request_key, and whole-number pricing inputs."));
+                "Request body must contain valid JSON, a UUID saveRequestKey, and whole-number pricing inputs."));
     }
 
     @ExceptionHandler(ResponseStatusException.class)

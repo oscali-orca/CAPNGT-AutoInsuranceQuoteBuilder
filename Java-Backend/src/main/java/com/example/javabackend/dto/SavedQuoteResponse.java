@@ -1,11 +1,9 @@
 package com.example.javabackend.dto;
 
 import java.time.Instant;
+import com.fasterxml.jackson.annotation.JsonAlias;
 import com.example.javabackend.enums.PackageType;
-import tools.jackson.databind.PropertyNamingStrategies;
-import tools.jackson.databind.annotation.JsonNaming;
 
-@JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
 public record SavedQuoteResponse(
         long id,
         String quoteReference,
@@ -15,11 +13,10 @@ public record SavedQuoteResponse(
         Snapshot snapshot
 ) {
     // Typed prices deserialize directly to BigDecimal; historical results are never repriced.
-    @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
     public record Snapshot(
-            int schemaVersion,
+            @JsonAlias("schema_version") int schemaVersion,
             PricingRequest inputs,
-            PackageType selectedPackage,
+            @JsonAlias("selected_package") PackageType selectedPackage,
             PricingResponse comparison
     ) {}
 }
