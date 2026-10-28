@@ -9,6 +9,7 @@ import org.springframework.stereotype.Repository;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
@@ -19,12 +20,13 @@ import java.util.UUID;
 public class JdbcSavedQuoteRepository {
     public record Row(long id, String quoteReference, long customerId, UUID requestKey,
                       String quoteName, PackageType selectedPackage, PricingRequest pricingInputs,
-                      String snapshotJson, Instant createdAt) {}
+                      String snapshotJson, Instant createdAt, String rateVersion,
+                      BigDecimal basicTotal, BigDecimal standardTotal, BigDecimal enhancedTotal) {}
 
     private static final String COLUMNS = """
             id, quote_reference, customer_id, request_key, quote_name, selected_package,
             driver_age, vehicle_age, annual_mileage, prior_claims, comparison_deductible,
-            snapshot, created_at
+            snapshot, created_at, rate_version_code, basic_total, standard_total, enhanced_total
             """;
     private final JdbcTemplate jdbc;
     public JdbcSavedQuoteRepository(JdbcTemplate jdbc) { this.jdbc = jdbc; }
@@ -41,7 +43,9 @@ public class JdbcSavedQuoteRepository {
                 new PricingRequest(rs.getInt("driver_age"), rs.getInt("vehicle_age"),
                         rs.getInt("annual_mileage"), rs.getInt("prior_claims"),
                         rs.getInt("comparison_deductible")), rs.getString("snapshot"),
-                rs.getTimestamp("created_at").toInstant());
+                rs.getTimestamp("created_at").toInstant(), rs.getString("rate_version_code"),
+                rs.getBigDecimal("basic_total"), rs.getBigDecimal("standard_total"),
+                rs.getBigDecimal("enhanced_total"));
     }
 
     public Optional<Row> findByCustomerAndKey(long customerId, UUID key) {

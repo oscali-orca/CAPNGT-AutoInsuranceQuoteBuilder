@@ -1,33 +1,34 @@
 package com.example.javabackend.dto;
 
 import com.example.javabackend.enums.PackageType;
+import com.fasterxml.jackson.annotation.JsonAlias;
 import java.math.BigDecimal;
 
 public record PricingResponse(
-        String rateVersion,
+        @JsonAlias("rate_version") String rateVersion,
         String currency,
         String period,
-        RiskFactors riskFactors,
-        int comparisonDeductible,
-        BigDecimal deductibleFactor,
+        @JsonAlias("risk_factors") RiskFactors riskFactors,
+        @JsonAlias("comparison_deductible") int comparisonDeductible,
+        @JsonAlias("deductible_factor") BigDecimal deductibleFactor,
         PackageBreakdown basic,
         PackageBreakdown standard,
         PackageBreakdown enhanced
 ) {
     public record RiskFactors(
-            BigDecimal driverFactor,
-            BigDecimal mileageFactor,
-            BigDecimal claimsFactor,
-            BigDecimal vehicleFactor
+            @JsonAlias("driver_factor") BigDecimal driverFactor,
+            @JsonAlias("mileage_factor") BigDecimal mileageFactor,
+            @JsonAlias("claims_factor") BigDecimal claimsFactor,
+            @JsonAlias("vehicle_factor") BigDecimal vehicleFactor
     ) {}
 
     public record PackageBreakdown(
-            PackageType packageType,
+            @JsonAlias("package_type") PackageType packageType,
             BigDecimal liability,
             BigDecimal collision,
             BigDecimal comprehensive,
-            boolean deductibleApplicable,
+            @JsonAlias("deductible_applicable") boolean deductibleApplicable,
             Integer deductible,
-            BigDecimal annualTotal
+            @JsonAlias("annual_total") BigDecimal annualTotal
     ) {}
 }

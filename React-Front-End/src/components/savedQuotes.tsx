@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useRef, useState, type FormEvent } from 'react';
 import './savedQuotes.css';
-import { ApiError, compare, duplicateQuote, factors, getQuote, listQuotes, saveQuote } from '../services/savedQuotesApi';
-import type { Breakdown, PackageCode, QuoteDraft, RiskInputs, SavedQuoteDetail } from '../types/savedQuotes';
+import { ApiError, compare, duplicateQuote, getQuote, listQuotes, saveQuote } from '../services/savedQuotesApi';
+import type { Breakdown, Comparison, PackageCode, QuoteDraft, RiskFactors, RiskInputs, SavedQuoteDetail } from '../types/savedQuotes';
 
 const money = (n: number) => new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(n);
 const when = (iso: string) => new Date(iso).toLocaleString('en-US', { dateStyle: 'medium', timeStyle: 'short' });
@@ -19,7 +19,8 @@ const FIELDS: { key: keyof RiskInputs; label: string; min: number; max: number; 
 function describe(e: unknown): string {
   if (!(e instanceof ApiError)) return 'Something went wrong. Try again.';
   if (e.status === 401) return 'Your session has ended. Log in again to continue.';
-  if (e.status === 403 || e.status === 404) return 'This quote is not available. It may belong to another customer or no longer exist.';
+  if (e.status === 403) return 'Request denied. Sign in again to refresh your session, then retry.';
+  if (e.status === 404) return 'This quote is not available. It may belong to another customer or no longer exist.';
   if (e.status === 409) return 'This save conflicts with an earlier one. Review the quote and save again.';
   return e.message;
 }
@@ -49,15 +50,15 @@ function useSaveKey(payload: unknown) {
   return ref.current.key;
 }
 
-export function SaveQuoteForm(props: { packageCode: PackageCode; deductible: number; inputs: RiskInputs; disabled?: boolean; onSaved: (q: SavedQuoteDetail) => void }) {
-  const [name, setName] = useState('');
+export function SaveQuoteForm(props: { packageCode: PackageCode; deductible: number; inputs: RiskInputs; initialName?: string; disabled?: boolean; onSaved: (q: SavedQuoteDetail) => void }) {
+  const [name, setName] = useState(props.initialName ?? '');
   const [touched, setTouched] = useState(false);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<unknown>(null);
   const trimmed = name.trim();
   const payload = { name: trimmed, packageCode: props.packageCode, deductible: props.deductible, inputs: props.inputs };
   const key = useSaveKey(payload);
-  const nameError = touched && !trimmed ? 'Enter a name for this quote.' : error instanceof ApiError ? error.fieldErrors.name : undefined;
+  const nameError = touched && !trimmed ? 'Enter a name for this quote.' : error instanceof ApiError ? error.fieldErrors.quoteName ?? error.fieldErrors.name : undefined;
 
   async function submit(e?: FormEvent) {
     e?.preventDefault();
@@ -69,7 +70,7 @@ export function SaveQuoteForm(props: { packageCode: PackageCode; deductible: num
   return (
     <form onSubmit={submit} noValidate style={{ maxWidth: 420 }}>
       <label className="field">Quote name
-        <input value={name} maxLength={80} disabled={saving} aria-invalid={!!nameError} aria-describedby="sq-name-err"
+        <input value={name} maxLength={100} disabled={saving} aria-invalid={!!nameError} aria-describedby="sq-name-err"
                onChange={(e) => setName(e.target.value)} onBlur={() => setTouched(true)} />
         <span id="sq-name-err" className="err">{nameError}</span>
       </label>
@@ -97,11 +98,11 @@ function ComparisonTable({ breakdowns, deductible, selected, onSelect }: { break
       <table className="cmp">
         <thead><tr><th>Annual USD</th>{breakdowns.map((b) => <th key={b.packageCode}>{PACKAGES[b.packageCode]}{b.packageCode === selected && ' · selected'}</th>)}</tr></thead>
         <tbody>
-          <tr><th scope="row">Coverage</th>{breakdowns.map((b) => cell(b, <>Liability{b.collision != null && <><br />Collision</>}{b.comprehensive != null && <><br />Comprehensive</>}</>))}</tr>
-          <tr><th scope="row">Deductible</th>{breakdowns.map((b) => cell(b, b.collision == null ? 'Not applicable' : money(deductible)))}</tr>
-          <tr><th scope="row">Adjusted liability</th>{breakdowns.map((b) => cell(b, money(b.liability)))}</tr>
-          <tr><th scope="row">Collision</th>{breakdowns.map((b) => cell(b, money(b.collision ?? 0)))}</tr>
-          <tr><th scope="row">Comprehensive</th>{breakdowns.map((b) => cell(b, money(b.comprehensive ?? 0)))}</tr>
+          <tr><th scope="row">Coverage</th>{breakdowns.map((b) => cell(b, <>Liability{b.packageCode !== 'BASIC' && <><br />Collision</>}{b.packageCode === 'ENHANCED' && <><br />Comprehensive</>}</>))}</tr>
+          <tr><th scope="row">Deductible</th>{breakdowns.map((b) => cell(b, b.packageCode === 'BASIC' ? 'Not applicable' : money(deductible)))}</tr>
+          <tr><th scope="row">Adjusted liability</th>{breakdowns.map((b) => cell(b, b.liability == null ? 'Unavailable' : money(b.liability)))}</tr>
+          <tr><th scope="row">Collision</th>{breakdowns.map((b) => cell(b, b.packageCode === 'BASIC' ? 'Not included' : b.collision == null ? 'Unavailable' : money(b.collision)))}</tr>
+          <tr><th scope="row">Comprehensive</th>{breakdowns.map((b) => cell(b, b.packageCode !== 'ENHANCED' ? 'Not included' : b.comprehensive == null ? 'Unavailable' : money(b.comprehensive)))}</tr>
           <tr className="total"><th scope="row">Annual estimate</th>{breakdowns.map((b) => cell(b, money(b.total)))}</tr>
           {onSelect && (
             <tr><th scope="row">Choose</th>{breakdowns.map((b) => cell(b,
@@ -115,10 +116,9 @@ function ComparisonTable({ breakdowns, deductible, selected, onSelect }: { break
   );
 }
 
-function Formula({ inputs }: { inputs: RiskInputs }) {
-  const k = factors(inputs);
-  const f = (x: number) => x.toFixed(2);
-  return <p className="formula">Base liability $600.00 × driver {f(k.driver)} × mileage {f(k.mileage)} × claims {f(k.claims)} × vehicle {f(k.vehicle)}.</p>;
+function Formula({ factors }: { factors?: RiskFactors }) {
+  if (!factors) return null;
+  return <p className="formula">Risk multipliers: driver {factors.driverFactor} × mileage {factors.mileageFactor} × claims {factors.claimsFactor} × vehicle {factors.vehicleFactor}.</p>;
 }
 
 function List({ onOpen, onStartNew }: { onOpen: (id: string) => void; onStartNew: () => void }) {
@@ -138,7 +138,7 @@ function List({ onOpen, onStartNew }: { onOpen: (id: string) => void; onStartNew
           <tbody>
             {data.map((q) => (
               <tr key={q.id}>
-                <td>{q.reference}<small>{q.name}</small></td>
+                <td>{q.reference}<small>{q.name}</small>{q.historyWarning && <small>{q.historyWarning}</small>}</td>
                 <td>{PACKAGES[q.packageCode]}</td>
                 <td>{money(q.annualEstimate)}<small>{q.rateVersion}</small></td>
                 <td className="hide-sm">{when(q.createdAt)}</td>
@@ -159,7 +159,7 @@ function Detail({ id, onBack, onDuplicate }: { id: string; onBack: () => void; o
   const [dupError, setDupError] = useState<unknown>(null);
   async function duplicate() {
     setBusy(true); setDupError(null);
-    try { onDuplicate(await duplicateQuote(id)); } catch (e) { setDupError(e); setBusy(false); }
+    try { onDuplicate(await duplicateQuote(id, q?.reference ?? null)); } catch (e) { setDupError(e); setBusy(false); }
   }
   if (loading) return <p role="status">Loading quote…</p>;
   if (error || !q) return <><ErrorBanner error={error} onRetry={reload} /><button onClick={onBack}>Back to saved quotes</button></>;
@@ -171,22 +171,24 @@ function Detail({ id, onBack, onDuplicate }: { id: string; onBack: () => void; o
       </div>
       <ErrorBanner error={dupError} onRetry={duplicate} />
       <div className="note">Saved snapshot · {q.rateVersion} · {PACKAGES[q.packageCode]} selected · Original prices are preserved.</div>
+      {q.historyWarning && <div className="note" role="status">{q.historyWarning}</div>}
       <Strip inputs={q.inputs} />
       <ComparisonTable breakdowns={q.breakdowns} deductible={q.deductible} selected={q.packageCode} />
-      <Formula inputs={q.inputs} />
+      <Formula factors={q.riskFactors} />
       <div className="actions"><button onClick={onBack}>Back to saved quotes</button></div>
     </>
   );
 }
 
-type Priced = { rateVersion: string; breakdowns: Breakdown[]; inputs: RiskInputs; deductible: number };
+type Priced = Comparison & { inputs: RiskInputs; deductible: number };
 
 // The draft lives only in React state. The original snapshot is never sent back.
 function Draft({ draft, onCancel, onSaved }: { draft: QuoteDraft; onCancel: () => void; onSaved: (q: SavedQuoteDetail) => void }) {
   const [text, setText] = useState(() => Object.fromEntries(Object.entries(draft.inputs).map(([k, v]) => [k, String(v)])) as Record<keyof RiskInputs, string>);
   const [deductible, setDeductible] = useState(draft.deductible);
   const [pkg, setPkg] = useState<PackageCode>(draft.packageCode);
-  const [priced, setPriced] = useState<Priced | null>(null);
+  const [priced, setPriced] = useState<Priced | null>(draft.comparison
+    ? { ...draft.comparison, inputs: draft.inputs, deductible: draft.deductible } : null);
   const [step, setStep] = useState<'edit' | 'compare'>('edit');
   const [pricing, setPricing] = useState(false);
   const [errors, setErrors] = useState<Partial<Record<keyof RiskInputs, string>>>({});
@@ -215,9 +217,9 @@ function Draft({ draft, onCancel, onSaved }: { draft: QuoteDraft; onCancel: () =
         <div className="note" style={{ marginTop: 20 }}>Prices were recalculated at current rates ({priced.rateVersion}){ref ? ` and may differ from ${ref}. The original snapshot is unchanged.` : '.'}</div>
         <Strip inputs={priced.inputs} />
         <ComparisonTable breakdowns={priced.breakdowns} deductible={priced.deductible} selected={pkg} onSelect={setPkg} />
-        <Formula inputs={priced.inputs} />
+        <Formula factors={priced.riskFactors} />
         <h3>Save as a new quote</h3>
-        <SaveQuoteForm packageCode={pkg} deductible={priced.deductible} inputs={priced.inputs} onSaved={onSaved} />
+        <SaveQuoteForm packageCode={pkg} deductible={priced.deductible} inputs={priced.inputs} initialName={draft.name} onSaved={onSaved} />
         <div className="actions"><button onClick={() => setStep('edit')}>Back to edit details</button><button onClick={onCancel}>Discard draft</button></div>
       </>
     );

@@ -14,6 +14,7 @@ import org.springframework.transaction.annotation.Isolation;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 import tools.jackson.databind.ObjectMapper;
+import tools.jackson.core.JacksonException;
 
 import java.util.List;
 
@@ -91,7 +92,48 @@ public class SavedQuoteService {
     }
 
     private SavedQuoteResponse response(JdbcSavedQuoteRepository.Row row) {
-        var snapshot = json.readValue(row.snapshotJson(), SavedQuoteResponse.Snapshot.class);
+        SavedQuoteResponse.Snapshot snapshot;
+        try {
+            snapshot = json.readValue(row.snapshotJson(), SavedQuoteResponse.Snapshot.class);
+        } catch (JacksonException exception) {
+            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR,
+                    "Stored quote snapshot is invalid. Historical prices have not been recalculated.", exception);
+        }
+        if (snapshot == null) {
+            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR,
+                    "Stored quote snapshot is missing. Historical prices have not been recalculated.");
+        }
+        if (snapshot.comparison() == null) {
+            // Repository fixtures may contain only {} or a note. Never invent historical components.
+            if (row.rateVersion() == null || row.basicTotal() == null
+                    || row.standardTotal() == null || row.enhancedTotal() == null) {
+                throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR,
+                        "Stored quote totals are missing. Historical prices cannot be recovered without the original data.");
+            }
+            var totals = new SavedQuoteResponse.StoredTotals(row.rateVersion(), row.basicTotal(),
+                    row.standardTotal(), row.enhancedTotal());
+            snapshot = new SavedQuoteResponse.Snapshot(snapshot.schemaVersion(), row.pricingInputs(),
+                    row.selectedPackage(), null, totals,
+                    "Historical breakdown unavailable. Showing stored totals and inputs; prices have not been recalculated.");
+        } else if (snapshot.schemaVersion() == null || snapshot.inputs() == null
+                || snapshot.selectedPackage() == null) {
+            snapshot = new SavedQuoteResponse.Snapshot(snapshot.schemaVersion(),
+                    snapshot.inputs() == null ? row.pricingInputs() : snapshot.inputs(),
+                    snapshot.selectedPackage() == null ? row.selectedPackage() : snapshot.selectedPackage(),
+                    snapshot.comparison(), null,
+                    "Historical snapshot metadata is incomplete. Stored prices are shown unchanged.");
+        }
+        if (snapshot.comparison() != null) {
+            var comparison = snapshot.comparison();
+            if (comparison.rateVersion() == null || comparison.basic() == null
+                    || comparison.standard() == null || comparison.enhanced() == null
+                    || comparison.basic().annualTotal() == null
+                    || comparison.standard().annualTotal() == null
+                    || comparison.enhanced().annualTotal() == null) {
+                throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR,
+                        "Stored quote comparison is incomplete. Historical prices have not been recalculated.");
+            }
+        }
         return new SavedQuoteResponse(row.id(), row.quoteReference(), row.quoteName(), row.selectedPackage(),
                 row.createdAt(), snapshot);
     }

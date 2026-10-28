@@ -1,14 +1,8 @@
-import type {
-  ComparisonDeductible,
-  CoveragePackage,
-  RiskDetails,
-} from "../types/quote";
+import type { ComparisonDeductible, CoveragePackage, RiskDetails } from "../types/quote";
+import type { RiskFactors } from "../types/savedQuotes";
+import { apiRequest } from "./quoteApi";
 
-export const COVERAGE_PACKAGES: CoveragePackage[] = [
-  "BASIC",
-  "STANDARD",
-  "ENHANCED",
-];
+export const COVERAGE_PACKAGES: CoveragePackage[] = ["BASIC", "STANDARD", "ENHANCED"];
 
 export interface PricingFactor {
   name: string;
@@ -16,128 +10,48 @@ export interface PricingFactor {
 }
 
 export interface PackagePrice {
-  base_liability: string;
   factors: PricingFactor[];
   adjusted_liability_premium: string;
-  add_on_costs: {
-    collision: string;
-    comprehensive: string;
-  };
+  add_on_costs: { collision: string; comprehensive: string };
   total_annual: string;
 }
 
 export interface ComparisonResponse {
   risk_inputs: RiskDetails;
   comparison_deductible: ComparisonDeductible;
-  rate_configuration: {
-    version: "TRAINING-1";
-    currency: "USD";
-    period: "ANNUAL";
-  };
+  deductible_factor: string;
+  rate_configuration: { version: string; currency: string; period: string };
   packages: Record<CoveragePackage, PackagePrice>;
 }
 
-const BASE_LIABILITY_CENTS = 60000;
-const COLLISION_BASE_CENTS = 24000;
-const COMPREHENSIVE_BASE_CENTS = 12000;
-
-const DEDUCTIBLE_MULTIPLIER_BASIS_POINTS: Record<
-  ComparisonDeductible,
-  number
-> = {
-  500: 10000,
-  1000: 8500,
-  2000: 7000,
-};
-
-function toDecimal(cents: number): string {
-  return (cents / 100).toFixed(2);
+export interface BackendPackage {
+  packageType: CoveragePackage;
+  liability: number;
+  collision: number;
+  comprehensive: number;
+  deductibleApplicable: boolean;
+  deductible: number | null;
+  annualTotal: number;
 }
 
-function getRiskFactors(risk: RiskDetails): PricingFactor[] {
-  const driver =
-    risk.driverAge < 25 ? 1.3 : risk.driverAge >= 65 ? 1.15 : 1;
-  const mileage = risk.annualMileage <= 7500
-    ? 0.9
-    : risk.annualMileage <= 15000
-      ? 1
-      : risk.annualMileage <= 25000
-        ? 1.1
-        : 1.2;
-  const claims = 1 + risk.priorClaims * 0.2;
-  const vehicle = 1 + (20 - risk.vehicleAge) * 0.01;
-
-  return [
-    { name: "Driver", multiplier: driver.toFixed(2) },
-    { name: "Mileage", multiplier: mileage.toFixed(2) },
-    { name: "Claims", multiplier: claims.toFixed(2) },
-    { name: "Vehicle", multiplier: vehicle.toFixed(2) },
-  ];
+export interface BackendPricingResponse {
+  rateVersion: string;
+  currency: string;
+  period: string;
+  riskFactors: RiskFactors;
+  comparisonDeductible: ComparisonDeductible;
+  deductibleFactor: number;
+  basic: BackendPackage;
+  standard: BackendPackage;
+  enhanced: BackendPackage;
 }
 
-function validateRiskDetails(risk: RiskDetails): void {
-  const valid =
-    Number.isInteger(risk.driverAge) &&
-    risk.driverAge >= 18 &&
-    risk.driverAge <= 80 &&
-    Number.isInteger(risk.vehicleAge) &&
-    risk.vehicleAge >= 0 &&
-    risk.vehicleAge <= 20 &&
-    Number.isInteger(risk.annualMileage) &&
-    risk.annualMileage >= 0 &&
-    risk.annualMileage <= 50000 &&
-    Number.isInteger(risk.priorClaims) &&
-    risk.priorClaims >= 0 &&
-    risk.priorClaims <= 3;
-
-  if (!valid) {
-    throw new Error("Risk details are outside the allowed pricing ranges.");
-  }
-}
-
-function roundHalfUp(numerator: bigint, denominator: bigint): bigint {
-  return (numerator + denominator / 2n) / denominator;
-}
-
-function multiplierToHundredths(multiplier: string): bigint {
-  const [whole, fraction] = multiplier.split(".");
-  if (whole === undefined || fraction === undefined || fraction.length !== 2) {
-    throw new Error("Pricing factors must have two decimal places.");
-  }
-
-  return BigInt(whole) * 100n + BigInt(fraction);
-}
-
-function buildPackagePrice(
-  baseLiabilityCents: number,
-  factors: PricingFactor[],
-  collisionCents: number,
-  comprehensiveCents: number,
-): PackagePrice {
-  const factorProduct = factors.reduce(
-    (product, factor) => product * multiplierToHundredths(factor.multiplier),
-    1n,
-  );
-  const liabilityDenominator = 100n ** BigInt(factors.length);
-  const adjustedLiabilityCents = Number(
-    roundHalfUp(
-      BigInt(baseLiabilityCents) * factorProduct,
-      liabilityDenominator,
-    ),
-  );
-
-  return {
-    base_liability: toDecimal(baseLiabilityCents),
-    factors,
-    adjusted_liability_premium: toDecimal(adjustedLiabilityCents),
-    add_on_costs: {
-      collision: toDecimal(collisionCents),
-      comprehensive: toDecimal(comprehensiveCents),
-    },
-    total_annual: toDecimal(
-      adjustedLiabilityCents + collisionCents + comprehensiveCents,
-    ),
-  };
+export function fetchPricingComparison(risk: RiskDetails, deductible: number, signal?: AbortSignal) {
+  return apiRequest<BackendPricingResponse>("/api/pricing/compare", {
+    method: "POST",
+    body: { ...risk, comparisonDeductible: deductible },
+    signal,
+  });
 }
 
 export async function calculateComparison(
@@ -145,61 +59,32 @@ export async function calculateComparison(
   deductible: ComparisonDeductible,
   signal: AbortSignal,
 ): Promise<ComparisonResponse> {
-  await new Promise<void>((resolve, reject) => {
-    const timer = globalThis.setTimeout(resolve, 350);
-    signal.addEventListener(
-      "abort",
-      () => {
-        globalThis.clearTimeout(timer);
-        reject(new DOMException("Pricing request was cancelled.", "AbortError"));
-      },
-      { once: true },
-    );
+  const result = await fetchPricingComparison(risk, deductible, signal);
+  const factors: PricingFactor[] = [
+    { name: "Driver", multiplier: String(result.riskFactors.driverFactor) },
+    { name: "Mileage", multiplier: String(result.riskFactors.mileageFactor) },
+    { name: "Claims", multiplier: String(result.riskFactors.claimsFactor) },
+    { name: "Vehicle", multiplier: String(result.riskFactors.vehicleFactor) },
+  ];
+  // Format backend amounts for the existing UI; do not recalculate premiums.
+  const displayPackage = (price: BackendPackage): PackagePrice => ({
+    factors,
+    adjusted_liability_premium: price.liability.toFixed(2),
+    add_on_costs: {
+      collision: price.collision.toFixed(2),
+      comprehensive: price.comprehensive.toFixed(2),
+    },
+    total_annual: price.annualTotal.toFixed(2),
   });
-
-  if (signal.aborted) {
-    throw new DOMException("Pricing request was cancelled.", "AbortError");
-  }
-
-  validateRiskDetails(risk);
-
-  const factors = getRiskFactors(risk);
-  const deductibleMultiplier = DEDUCTIBLE_MULTIPLIER_BASIS_POINTS[deductible];
-  const collisionCents = Number(
-    roundHalfUp(
-      BigInt(COLLISION_BASE_CENTS) * BigInt(deductibleMultiplier),
-      10000n,
-    ),
-  );
-  const comprehensiveCents = Number(
-    roundHalfUp(
-      BigInt(COMPREHENSIVE_BASE_CENTS) * BigInt(deductibleMultiplier),
-      10000n,
-    ),
-  );
-
   return {
     risk_inputs: { ...risk },
-    comparison_deductible: deductible,
-    rate_configuration: {
-      version: "TRAINING-1",
-      currency: "USD",
-      period: "ANNUAL",
-    },
+    comparison_deductible: result.comparisonDeductible,
+    deductible_factor: String(result.deductibleFactor),
+    rate_configuration: { version: result.rateVersion, currency: result.currency, period: result.period },
     packages: {
-      BASIC: buildPackagePrice(BASE_LIABILITY_CENTS, factors, 0, 0),
-      STANDARD: buildPackagePrice(
-        BASE_LIABILITY_CENTS,
-        factors,
-        collisionCents,
-        0,
-      ),
-      ENHANCED: buildPackagePrice(
-        BASE_LIABILITY_CENTS,
-        factors,
-        collisionCents,
-        comprehensiveCents,
-      ),
+      BASIC: displayPackage(result.basic),
+      STANDARD: displayPackage(result.standard),
+      ENHANCED: displayPackage(result.enhanced),
     },
   };
 }
