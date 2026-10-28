@@ -61,10 +61,10 @@ export async function calculateComparison(
 ): Promise<ComparisonResponse> {
   const result = await fetchPricingComparison(risk, deductible, signal);
   const factors: PricingFactor[] = [
-    { name: "Driver", multiplier: String(result.riskFactors.driverFactor) },
-    { name: "Mileage", multiplier: String(result.riskFactors.mileageFactor) },
-    { name: "Claims", multiplier: String(result.riskFactors.claimsFactor) },
-    { name: "Vehicle", multiplier: String(result.riskFactors.vehicleFactor) },
+    { name: "Driver", multiplier: result.riskFactors.driverFactor.toFixed(2) },
+    { name: "Mileage", multiplier: result.riskFactors.mileageFactor.toFixed(2) },
+    { name: "Claims", multiplier: result.riskFactors.claimsFactor.toFixed(2) },
+    { name: "Vehicle", multiplier: result.riskFactors.vehicleFactor.toFixed(2) },
   ];
   // Format backend amounts for the existing UI; do not recalculate premiums.
   const displayPackage = (price: BackendPackage): PackagePrice => ({
@@ -79,7 +79,7 @@ export async function calculateComparison(
   return {
     risk_inputs: { ...risk },
     comparison_deductible: result.comparisonDeductible,
-    deductible_factor: String(result.deductibleFactor),
+    deductible_factor: result.deductibleFactor.toFixed(2),
     rate_configuration: { version: result.rateVersion, currency: result.currency, period: result.period },
     packages: {
       BASIC: displayPackage(result.basic),

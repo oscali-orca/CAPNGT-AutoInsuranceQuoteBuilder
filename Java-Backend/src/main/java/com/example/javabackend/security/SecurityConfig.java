@@ -85,6 +85,8 @@ public class SecurityConfig {
                         .requestMatchers("/swagger-ui/**", "/swagger-ui.html", "/v3/api-docs",
                                 "/v3/api-docs/**", "/v3/api-docs.yaml").permitAll()
                         .requestMatchers("/api/csrf").permitAll()
+                        // Lets error responses (like 403 for a missing CSRF token) keep their status instead of becoming 401
+                        .requestMatchers("/error").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/session").authenticated()
                         .requestMatchers(HttpMethod.DELETE, "/api/session").authenticated()
                         .requestMatchers("/api/session").permitAll()
