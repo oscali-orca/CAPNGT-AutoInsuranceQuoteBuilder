@@ -1,11 +1,8 @@
 package com.example.javabackend.dto;
 
 import com.example.javabackend.enums.PackageType;
-import tools.jackson.databind.PropertyNamingStrategies;
-import tools.jackson.databind.annotation.JsonNaming;
 import java.math.BigDecimal;
 
-@JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
 public record PricingResponse(
         String rateVersion,
         String currency,
@@ -17,7 +14,6 @@ public record PricingResponse(
         PackageBreakdown standard,
         PackageBreakdown enhanced
 ) {
-    @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
     public record RiskFactors(
             BigDecimal driverFactor,
             BigDecimal mileageFactor,
@@ -25,7 +21,6 @@ public record PricingResponse(
             BigDecimal vehicleFactor
     ) {}
 
-    @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
     public record PackageBreakdown(
             PackageType packageType,
             BigDecimal liability,

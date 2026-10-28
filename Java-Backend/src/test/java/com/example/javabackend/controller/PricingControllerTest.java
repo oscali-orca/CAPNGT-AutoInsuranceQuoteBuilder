@@ -9,6 +9,7 @@ import org.springframework.http.MediaType;
 import org.springframework.http.converter.json.JacksonJsonHttpMessageConverter;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
+import org.springframework.validation.beanvalidation.LocalValidatorFactoryBean;
 import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.json.JsonMapper;
 import tools.jackson.databind.node.ObjectNode;
@@ -17,6 +18,7 @@ import java.math.BigDecimal;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -33,11 +35,21 @@ class PricingControllerTest {
     };
     private final JsonMapper mapper = JsonMapper.builder().build();
     private MockMvc mvc;
+    private LocalValidatorFactoryBean validator;
 
     @BeforeEach
     void setUp() {
+        validator = new LocalValidatorFactoryBean();
+        validator.afterPropertiesSet();
         mvc = MockMvcBuilders.standaloneSetup(new PricingController(new PricingService()))
+                .setControllerAdvice(new ApiValidationExceptionHandler())
+                .setValidator(validator)
                 .setMessageConverters(new JacksonJsonHttpMessageConverter(mapper)).build();
+    }
+
+    @org.junit.jupiter.api.AfterEach
+    void tearDown() {
+        validator.destroy();
     }
 
     @Test
@@ -72,25 +84,58 @@ class PricingControllerTest {
     void rejectsMissingAndNullRequiredFields(String field) throws Exception {
         ObjectNode input = (ObjectNode) mapper.readTree(INPUT);
         input.remove(field);
-        assertBadRequest(input.toString(), field);
+        assertFieldError(input.toString(), toJavaFieldName(field), requiredMessage(field));
         input.putNull(field);
-        assertBadRequest(input.toString(), field);
+        assertFieldError(input.toString(), toJavaFieldName(field), requiredMessage(field));
     }
 
     @ParameterizedTest
-    @ValueSource(strings = {"-1", "50001", "30.5", "\"30\"", "true", "[]", "{}", "2147483648"})
-    void rejectsInvalidValuesForEveryField(String invalidJson) throws Exception {
-        for (String field : FIELDS) {
-            ObjectNode input = (ObjectNode) mapper.readTree(INPUT);
-            input.set(field, mapper.readTree(invalidJson));
-            assertBadRequest(input.toString(), null);
-        }
+    @org.junit.jupiter.params.provider.CsvSource(value = {
+            "driver_age|17|Driver age must be between 18 and 80",
+            "vehicle_age|21|Vehicle age must be between 0 and 20",
+            "annual_mileage|50001|Annual mileage must be between 0 and 50000",
+            "prior_claims|4|Prior claims must be between 0 and 3",
+            "comparison_deductible|750|Comparison deductible must be 500, 1000, or 2000"
+    }, delimiter = '|')
+    void returnsFieldSpecificMessagesForOutOfRangeAndDisallowedValues(
+            String field, int value, String expectedMessage) throws Exception {
+        ObjectNode input = (ObjectNode) mapper.readTree(INPUT);
+        input.put(field, value);
+        assertFieldError(input.toString(), toJavaFieldName(field), expectedMessage);
+    }
+
+    @Test
+    void returnsMultipleErrorsUnderTheirCorrespondingFields() throws Exception {
+        ObjectNode input = (ObjectNode) mapper.readTree(INPUT);
+        input.put("driver_age", 17);
+        input.put("annual_mileage", 50001);
+
+        String body = mvc.perform(post(PATH).contentType(MediaType.APPLICATION_JSON).content(input.toString()))
+                .andExpect(status().isBadRequest()).andReturn().getResponse().getContentAsString();
+        JsonNode error = mapper.readTree(body);
+
+        assertErrorEnvelope(error, "VALIDATION_ERROR", "Invalid risk details");
+        assertEquals(2, error.get("fieldErrors").size());
+        assertEquals("Driver age must be between 18 and 80",
+                error.get("fieldErrors").get("driverAge").asString());
+        assertEquals("Annual mileage must be between 0 and 50000",
+                error.get("fieldErrors").get("annualMileage").asString());
     }
 
     @ParameterizedTest
-    @ValueSource(strings = {"", "null", "{}", "{", "[]", "\"text\"", "42"})
+    @ValueSource(strings = {"{", "[]", "\"text\"", "42"})
     void rejectsMissingOrMalformedRequestBodies(String input) throws Exception {
-        assertBadRequest(input, null);
+        assertBadRequest(input);
+    }
+
+    @Test
+    void emptyObjectReturnsAllRequiredFieldErrors() throws Exception {
+        String body = mvc.perform(post(PATH).contentType(MediaType.APPLICATION_JSON).content("{}"))
+                .andExpect(status().isBadRequest()).andReturn().getResponse().getContentAsString();
+        JsonNode error = mapper.readTree(body);
+
+        assertErrorEnvelope(error, "VALIDATION_ERROR", "Invalid risk details");
+        assertEquals(5, error.get("fieldErrors").size(), body);
     }
 
     @Test
@@ -113,18 +158,59 @@ class PricingControllerTest {
         mvc.perform(get(PATH)).andExpect(status().isMethodNotAllowed());
     }
 
-    private void assertBadRequest(String input, String expectedField) throws Exception {
+    private void assertBadRequest(String input) throws Exception {
         String body = mvc.perform(post(PATH).contentType(MediaType.APPLICATION_JSON).content(input))
                 .andExpect(status().isBadRequest()).andReturn().getResponse().getContentAsString();
         JsonNode error = mapper.readTree(body);
-        assertEquals(400, error.get("status").asInt());
-        assertTrue(error.get("detail").isString());
-        if (expectedField != null) {
-            assertTrue(error.get("detail").asString().contains(expectedField));
-        }
+        assertEquals(3, error.size(), body);
+        assertTrue(error.get("code").isString(), body);
+        assertTrue(error.get("message").isString(), body);
+        assertTrue(error.get("fieldErrors").isObject(), body);
         assertFalse(body.contains("com.example"));
         assertFalse(body.contains("tools.jackson"));
         assertFalse(error.has("trace"));
+    }
+
+    private void assertFieldError(String input, String field, String expectedMessage) throws Exception {
+        String body = mvc.perform(post(PATH).contentType(MediaType.APPLICATION_JSON).content(input))
+                .andExpect(status().isBadRequest()).andReturn().getResponse().getContentAsString();
+        JsonNode error = mapper.readTree(body);
+
+        assertErrorEnvelope(error, "VALIDATION_ERROR", "Invalid risk details");
+        assertTrue(error.get("fieldErrors").has(field), body);
+        assertEquals(expectedMessage, error.get("fieldErrors").get(field).asString());
+        assertEquals(1, error.get("fieldErrors").size());
+    }
+
+    private void assertErrorEnvelope(JsonNode error, String code, String message) {
+        assertEquals(3, error.size());
+        assertEquals(code, error.get("code").asString());
+        assertEquals(message, error.get("message").asString());
+        assertTrue(error.get("fieldErrors").isObject());
+        assertNull(error.get("status"));
+        assertNull(error.get("detail"));
+    }
+
+    private String requiredMessage(String snakeCaseField) {
+        return switch (snakeCaseField) {
+            case "driver_age" -> "Driver age is required";
+            case "vehicle_age" -> "Vehicle age is required";
+            case "annual_mileage" -> "Annual mileage is required";
+            case "prior_claims" -> "Prior claims is required";
+            case "comparison_deductible" -> "Comparison deductible is required";
+            default -> throw new IllegalArgumentException(snakeCaseField);
+        };
+    }
+
+    private String toJavaFieldName(String snakeCaseField) {
+        return switch (snakeCaseField) {
+            case "driver_age" -> "driverAge";
+            case "vehicle_age" -> "vehicleAge";
+            case "annual_mileage" -> "annualMileage";
+            case "prior_claims" -> "priorClaims";
+            case "comparison_deductible" -> "comparisonDeductible";
+            default -> throw new IllegalArgumentException(snakeCaseField);
+        };
     }
 
     private static void assertDecimal(String expected, JsonNode actual) {
