@@ -29,10 +29,13 @@ public class ApiValidationExceptionHandler {
         String field = invalidField(exception);
         if (field != null) {
             String responseField = camelCaseField(field);
+            String fieldError = isWholeNumberError(exception)
+                    ? fieldLabel(field) + " must be a non-negative whole number"
+                    : fieldLabel(field) + " has an invalid value";
             return ResponseEntity.badRequest().body(new ApiError(
                     "VALIDATION_ERROR",
                     "Invalid details",
-                    Map.of(responseField, fieldLabel(field) + " must be a whole number")));
+                    Map.of(responseField, fieldError)));
         }
         return ResponseEntity.badRequest().body(new ApiError(
                 "INVALID_REQUEST_BODY",
@@ -65,6 +68,10 @@ public class ApiValidationExceptionHandler {
     }
 
     private String fieldLabel(String field) {
+        int nestedFieldSeparator = field.lastIndexOf('.');
+        if (nestedFieldSeparator >= 0) {
+            field = field.substring(nestedFieldSeparator + 1);
+        }
         return switch (field) {
             case "driverAge" -> "Driver age";
             case "driver_age" -> "Driver age";
@@ -79,11 +86,16 @@ public class ApiValidationExceptionHandler {
             case "selectedPackage" -> "Selected package";
             case "quoteName" -> "Quote name";
             case "requestKey" -> "Request key";
+            case "saveRequestKey" -> "Save request key";
+            case "pricingInputs" -> "Pricing inputs";
             default -> field;
         };
     }
 
     private String camelCaseField(String field) {
+        if (field.startsWith("pricingInputs.")) {
+            field = field.substring("pricingInputs.".length());
+        }
         return switch (field) {
             case "driverAge", "driver_age" -> "driverAge";
             case "vehicleAge", "vehicle_age" -> "vehicleAge";
@@ -110,6 +122,16 @@ public class ApiValidationExceptionHandler {
                     .orElse(null);
         }
         return null;
+    }
+
+    private boolean isWholeNumberError(HttpMessageNotReadableException exception) {
+        Throwable cause = exception;
+        while (cause != null && !(cause instanceof JacksonException)) {
+            cause = cause.getCause();
+        }
+        return cause instanceof JacksonException jacksonException
+                && jacksonException.getOriginalMessage() != null
+                && jacksonException.getOriginalMessage().contains("whole-number");
     }
 
     public record ApiError(String code, String message, Map<String, String> fieldErrors) {

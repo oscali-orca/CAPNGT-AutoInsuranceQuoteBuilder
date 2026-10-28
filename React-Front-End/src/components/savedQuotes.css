@@ -159,6 +159,11 @@
   font-size: 13px;
 }
 
+.sq .alert ul {
+  margin: 6px 0 0;
+  padding-left: 20px;
+}
+
 .sq .note {
   border: 1px solid #e1e5df;
   border-radius: 6px;
