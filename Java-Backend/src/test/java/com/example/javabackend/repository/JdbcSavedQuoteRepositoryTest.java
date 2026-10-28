@@ -13,6 +13,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.dao.DataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.test.context.jdbc.Sql;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.util.List;
@@ -23,9 +24,11 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-// T-09 tests for JdbcSavedQuoteRepository. Runs on Supabase and wipes saved quotes - remove before production
+// T-09 tests for JdbcSavedQuoteRepository.
+// @Transactional rolls back everything each test writes (test data included), so real data is never changed.
 @SpringBootTest
-@Sql({"/wipe-test-data.sql", "/saved-quote-fixtures.sql"})
+@Transactional
+@Sql("/saved-quote-fixtures.sql")
 class JdbcSavedQuoteRepositoryTest {
 
     @Autowired
@@ -43,8 +46,8 @@ class JdbcSavedQuoteRepositoryTest {
 
     @BeforeEach
     void findIds() {
-        alice = repository.findCustomerIdByUsername("alice.training").orElseThrow();
-        bob = repository.findCustomerIdByUsername("bob.training").orElseThrow();
+        alice = repository.findCustomerIdByUsername("t09.alice.test").orElseThrow();
+        bob = repository.findCustomerIdByUsername("t09.bob.test").orElseThrow();
         trainingRateId = repository.findRateConfigurationId("TRAINING-1").orElseThrow();
     }
 
@@ -117,10 +120,16 @@ class JdbcSavedQuoteRepositoryTest {
 
     @Test
     void databaseBlocksChangingOrDeletingASavedQuote() {
+        // In Postgres a failed statement cancels the whole transaction, so each attempt gets a savepoint to go back to
+        jdbc.execute("SAVEPOINT before_update");
         assertThrows(DataAccessException.class,
                 () -> jdbc.update("UPDATE saved_quote SET quote_name = 'Changed' WHERE quote_reference = 'Q-T09A01'"));
+        jdbc.execute("ROLLBACK TO SAVEPOINT before_update");
+
+        jdbc.execute("SAVEPOINT before_delete");
         assertThrows(DataAccessException.class,
                 () -> jdbc.update("DELETE FROM saved_quote WHERE quote_reference = 'Q-T09A01'"));
+        jdbc.execute("ROLLBACK TO SAVEPOINT before_delete");
 
         assertEquals("Alice first quote", repository.findOwnedById(alice, quoteId("Q-T09A01")).orElseThrow().quoteName());
     }

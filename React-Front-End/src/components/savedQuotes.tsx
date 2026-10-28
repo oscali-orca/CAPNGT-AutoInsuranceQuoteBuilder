@@ -118,7 +118,7 @@ function ComparisonTable({ breakdowns, deductible, selected, onSelect }: { break
 
 function Formula({ factors }: { factors?: RiskFactors }) {
   if (!factors) return null;
-  return <p className="formula">Risk multipliers: driver {factors.driverFactor} × mileage {factors.mileageFactor} × claims {factors.claimsFactor} × vehicle {factors.vehicleFactor}.</p>;
+  return <p className="formula">Risk multipliers: driver {factors.driverFactor.toFixed(2)} × mileage {factors.mileageFactor.toFixed(2)} × claims {factors.claimsFactor.toFixed(2)} × vehicle {factors.vehicleFactor.toFixed(2)}.</p>;
 }
 
 function List({ onOpen, onStartNew }: { onOpen: (id: string) => void; onStartNew: () => void }) {

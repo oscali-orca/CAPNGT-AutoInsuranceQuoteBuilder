@@ -57,26 +57,26 @@ class PricingControllerTest {
         String body = mvc.perform(post(PATH).contentType(MediaType.APPLICATION_JSON).content(INPUT))
                 .andExpect(status().isOk()).andReturn().getResponse().getContentAsString();
         JsonNode response = mapper.readTree(body);
-        assertEquals("TRAINING-1", response.get("rate_version").asString());
+        assertEquals("TRAINING-1", response.get("rateVersion").asString());
         assertEquals("USD", response.get("currency").asString());
         assertEquals("ANNUAL", response.get("period").asString());
-        assertEquals(1000, response.get("comparison_deductible").asInt());
-        assertDecimal("0.85", response.get("deductible_factor"));
-        assertDecimal("1.00", response.get("risk_factors").get("driver_factor"));
-        assertDecimal("1.00", response.get("risk_factors").get("mileage_factor"));
-        assertDecimal("1.00", response.get("risk_factors").get("claims_factor"));
-        assertDecimal("1.17", response.get("risk_factors").get("vehicle_factor"));
-        assertDecimal("702.00", response.get("basic").get("annual_total"));
-        assertDecimal("906.00", response.get("standard").get("annual_total"));
-        assertDecimal("1008.00", response.get("enhanced").get("annual_total"));
-        assertEquals("BASIC", response.get("basic").get("package_type").asString());
+        assertEquals(1000, response.get("comparisonDeductible").asInt());
+        assertDecimal("0.85", response.get("deductibleFactor"));
+        assertDecimal("1.00", response.get("riskFactors").get("driverFactor"));
+        assertDecimal("1.00", response.get("riskFactors").get("mileageFactor"));
+        assertDecimal("1.00", response.get("riskFactors").get("claimsFactor"));
+        assertDecimal("1.17", response.get("riskFactors").get("vehicleFactor"));
+        assertDecimal("702.00", response.get("basic").get("annualTotal"));
+        assertDecimal("906.00", response.get("standard").get("annualTotal"));
+        assertDecimal("1008.00", response.get("enhanced").get("annualTotal"));
+        assertEquals("BASIC", response.get("basic").get("packageType").asString());
         assertTrue(response.get("basic").get("deductible").isNull());
-        assertFalse(response.get("basic").get("deductible_applicable").asBoolean());
+        assertFalse(response.get("basic").get("deductibleApplicable").asBoolean());
         assertDecimal("204.00", response.get("standard").get("collision"));
         assertDecimal("102.00", response.get("enhanced").get("comprehensive"));
-        assertTrue(response.get("enhanced").get("deductible_applicable").asBoolean());
-        assertFalse(response.has("rateVersion"));
-        assertFalse(response.get("risk_factors").has("driverFactor"));
+        assertTrue(response.get("enhanced").get("deductibleApplicable").asBoolean());
+        assertFalse(response.has("rate_version"));
+        assertFalse(response.get("riskFactors").has("driver_factor"));
     }
 
     @ParameterizedTest
@@ -147,7 +147,7 @@ class PricingControllerTest {
                 .andReturn().getResponse();
         // Reject unknown properties or ignore them; never accept their prices.
         if (response.getStatus() == 200) {
-            assertDecimal("702.00", mapper.readTree(response.getContentAsString()).get("basic").get("annual_total"));
+            assertDecimal("702.00", mapper.readTree(response.getContentAsString()).get("basic").get("annualTotal"));
         } else {
             assertEquals(400, response.getStatus());
         }
