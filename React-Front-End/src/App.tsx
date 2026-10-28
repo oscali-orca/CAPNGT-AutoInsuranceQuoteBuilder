@@ -7,26 +7,45 @@ import CoverageComparison from "./components/CoverageComparison";
 import LoginPage from "./features/auth/LoginPage";
 import "./App.css";
 
-function App() {
+function AppRoutes() {
+  const navigate = useNavigate();
+
   return (
-    <BrowserRouter>
-      <Routes>
-        <Route path="/" element={<Navigate to="/login" replace />} />
-        <Route path="/login" element={<LoginRoute />} />
-        <Route path="/risk-details" element={<RiskDetailsForm />} />
-        <Route path="/coverage" element={<CoverageBuilder />} />
-        <Route path="/comparison" element={<CoverageComparison />} />
-        <Route path="/saved-quotes" element={<SavedQuotes />} />
-        <Route path="*" element={<Navigate to="/login" replace />} />
-      </Routes>
-    </BrowserRouter>
+    <Routes>
+      <Route path="/" element={<Navigate to="/login" replace />} />
+      <Route path="/login" element={<LoginRoute />} />
+      <Route path="/risk-details" element={<RiskDetailsForm />} />
+      <Route path="/coverage" element={<CoverageBuilder />} />
+      <Route path="/comparison" element={<CoverageComparison />} />
+      <Route
+        path="/saved-quotes"
+        element={
+          <SavedQuotes
+            onStartNew={() => navigate("/risk-details")}
+          />
+        }
+      />
+      <Route path="*" element={<Navigate to="/login" replace />} />
+    </Routes>
   );
 }
 
 function LoginRoute() {
   const navigate = useNavigate();
 
-  return <LoginPage onSignIn={() => navigate("/risk-details", { replace: true })} />;
+  return (
+    <LoginPage
+      onSignIn={() => navigate("/risk-details", { replace: true })}
+    />
+  );
+}
+
+function App() {
+  return (
+    <BrowserRouter>
+      <AppRoutes />
+    </BrowserRouter>
+  );
 }
 
 export default App;
