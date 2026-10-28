@@ -1,29 +1,34 @@
 import { useState, type FormEvent } from 'react'
 import './LoginPage.css'
+import { ApiError, signIn } from '../../services/quoteApi'
 
-const DEMO_EMAIL = 'demo@capngt.com'
-const DEMO_PASSWORD = 'Demo123!'
 
 interface LoginPageProps {
   onSignIn: () => void
 }
 
 function LoginPage({ onSignIn }: LoginPageProps) {
-  const [email, setEmail] = useState('')
+  const [username, setUsername] = useState('')
   const [password, setPassword] = useState('')
   const [passwordVisible, setPasswordVisible] = useState(false)
   const [error, setError] = useState('')
+  const [isSigningIn, setIsSigningIn] = useState(false)
 
-  function handleSubmit(event: FormEvent<HTMLFormElement>) {
+  async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault()
+    if (isSigningIn) return
     setError('')
-
-    if (email.trim().toLowerCase() !== DEMO_EMAIL || password !== DEMO_PASSWORD) {
-      setError('That email and password do not match the demo account.')
-      return
+    setIsSigningIn(true)
+    try {
+      await signIn(username, password)
+      onSignIn()
+    } catch (error) {
+      setError(error instanceof ApiError && error.status === 401
+        ? 'Username or password is incorrect.'
+        : error instanceof Error ? error.message : 'Could not sign in. Please try again.')
+    } finally {
+      setIsSigningIn(false)
     }
-
-    onSignIn()
   }
 
   return (
@@ -67,16 +72,16 @@ function LoginPage({ onSignIn }: LoginPageProps) {
           </div>
 
           <form className="login-form" onSubmit={handleSubmit}>
-            <label htmlFor="email">Email address</label>
+            <label htmlFor="username">Username</label>
             <input
               autoComplete="username"
-              id="email"
-              name="email"
-              onChange={(event) => setEmail(event.target.value)}
-              placeholder="you@example.com"
+              id="username"
+              name="username"
+              onChange={(event) => setUsername(event.target.value)}
+              placeholder="alice.training"
               required
-              type="email"
-              value={email}
+              type="text"
+              value={username}
             />
 
             <div className="password-label-row">
@@ -107,23 +112,13 @@ function LoginPage({ onSignIn }: LoginPageProps) {
               </p>
             )}
 
-            <button className="primary-button" type="submit">
-              Sign in <span aria-hidden="true">→</span>
+            <button className="primary-button" type="submit" disabled={isSigningIn}>
+              {isSigningIn ? 'Signing in...' : 'Sign in'} <span aria-hidden="true">→</span>
             </button>
           </form>
 
-          <aside className="demo-note">
-            <strong>Demo access</strong>
-            <span>
-              Email: <code>{DEMO_EMAIL}</code>
-            </span>
-            <span>
-              Password: <code>{DEMO_PASSWORD}</code>
-            </span>
-          </aside>
-
           <p className="security-note">
-            Demo only. This form does not connect to an authentication service.
+            Sign in with your assigned training account.
           </p>
         </div>
         <footer className="form-footer">

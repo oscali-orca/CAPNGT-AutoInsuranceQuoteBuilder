@@ -1,4 +1,4 @@
-import { useState, type FormEvent } from "react";
+import { useRef, useState, type FormEvent } from "react";
 import { Link } from "react-router-dom";
 import { useQuoteDraft } from "../context/QuoteDraftContext";
 import {
@@ -41,9 +41,7 @@ function PriceBreakdown({
   packageId: CoveragePackage;
 }) {
   const price = response.packages[packageId];
-  const deductibleFactor = (
-    Number(response.packages.STANDARD.add_on_costs.collision) / 240
-  ).toFixed(2);
+  const deductibleFactor = response.deductible_factor;
 
   return (
     <section
@@ -72,15 +70,15 @@ function PriceBreakdown({
         </div>
       </dl>
       <p className="coverage-breakdown-note">
-        Base liability {formatCurrency(price.base_liability)} ×{" "}
+        Risk multipliers: {" "}
         {price.factors
           .map((factor) => `${factor.name.toLowerCase()} ${factor.multiplier}`)
           .join(" × ")}
         .
       </p>
       <p className="coverage-breakdown-note">
-        Collision $240.00 × {deductibleFactor}; comprehensive $120.00 ×{" "}
-        {deductibleFactor} when included. Rounded HALF_UP to cents. Rate version{" "}
+        Deductible multiplier {deductibleFactor} applies to collision and comprehensive
+        when included. Premiums are calculated by the server and rounded HALF_UP to cents. Rate version{" "}
         {response.rate_configuration.version}.
       </p>
     </section>
@@ -105,6 +103,7 @@ export default function CoverageComparison() {
     text: string;
   } | null>(null);
   const [isSaving, setIsSaving] = useState(false);
+  const saveAttempt = useRef<{ signature: string; key: string } | null>(null);
 
   if (!riskDetails) {
     return (
@@ -124,19 +123,21 @@ export default function CoverageComparison() {
     if (!name || !response || isSaving) return;
 
     setIsSaving(true);
+    const payload = {
+      name,
+      packageCode: selectedPackage,
+      inputs: response.risk_inputs,
+      deductible: response.comparison_deductible,
+    };
+    const signature = JSON.stringify(payload);
+    if (saveAttempt.current?.signature !== signature) {
+      saveAttempt.current = { signature, key: crypto.randomUUID() };
+    }
     try {
-      await saveQuote(
-        {
-          name,
-          packageCode: selectedPackage,
-          inputs: response.risk_inputs,
-          deductible: response.comparison_deductible,
-        },
-        crypto.randomUUID(),
-      );
+      const saved = await saveQuote(payload, saveAttempt.current.key);
       setSaveMessage({
         type: "success",
-        text: `“${name}” was saved in this browser.`,
+        text: `“${saved.name}” was saved as ${saved.reference}.`,
       });
     } catch (saveError) {
       setSaveMessage({
@@ -318,7 +319,7 @@ export default function CoverageComparison() {
                 </div>
                 <p className="coverage-save-note">
                   Saves the selected package, inputs, all three prices, and rate
-                  version as a snapshot in this browser.
+                  version as a saved snapshot.
                 </p>
                 {saveMessage && (
                   <>
