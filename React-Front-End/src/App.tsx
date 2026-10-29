@@ -10,8 +10,6 @@ import ProtectedRoute from "./components/ProtectedRoute";
 
 
 function AppRoutes() {
-  const navigate = useNavigate();
-
   return (
     <Routes>
       <Route path="/" element={<Navigate to="/login" replace />} />
@@ -28,12 +26,7 @@ function AppRoutes() {
         <Route path="/risk-details" element={<RiskDetailsForm />} />
         <Route path="/coverage" element={<CoverageBuilder />} />
         <Route path="/comparison" element={<CoverageComparison />} />
-        <Route
-          path="/saved-quotes"
-          element={
-            <SavedQuotes onStartNew={() => navigate("/risk-details")}/>
-          }
-        />
+        <Route path="/saved-quotes" element={<SavedQuotes />} />
       </Route>
       
       <Route path="*" element={<Navigate to="/login" replace />} />

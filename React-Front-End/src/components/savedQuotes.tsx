@@ -1,5 +1,7 @@
 import { useCallback, useEffect, useRef, useState, type FormEvent } from 'react';
+import { useNavigate } from 'react-router-dom';
 import './savedQuotes.css';
+import CoverageTabs from './CoverageTabs';
 import { ApiError, compare, duplicateQuote, getQuote, listQuotes, saveQuote } from '../services/savedQuotesApi';
 import type { Breakdown, Comparison, PackageCode, QuoteDraft, RiskFactors, RiskInputs, SavedQuoteDetail } from '../types/savedQuotes';
 
@@ -7,7 +9,6 @@ const money = (n: number) => new Intl.NumberFormat('en-US', { style: 'currency',
 const when = (iso: string) => new Date(iso).toLocaleString('en-US', { dateStyle: 'medium', timeStyle: 'short' });
 const n0 = (n: number) => n.toLocaleString('en-US');
 const PACKAGES: Record<PackageCode, string> = { BASIC: 'Basic', STANDARD: 'Standard', ENHANCED: 'Enhanced' };
-const BLANK: QuoteDraft = { sourceReference: null, inputs: { driverAge: 30, vehicleAge: 3, annualMileage: 12000, priorClaims: 0 }, deductible: 1000, packageCode: 'STANDARD' };
 
 const FIELDS: { key: keyof RiskInputs; label: string; min: number; max: number; hint: string }[] = [
   { key: 'driverAge', label: 'Driver age', min: 18, max: 80, hint: '18 to 80 years' },
@@ -263,11 +264,13 @@ function Draft({ draft, onCancel, onSaved }: { draft: QuoteDraft; onCancel: () =
 
 type View = { name: 'list' } | { name: 'detail'; id: string } | { name: 'draft'; draft: QuoteDraft };
 
-export default function SavedQuotes({ onStartNew }: { onStartNew?: () => void }) {
+export default function SavedQuotes() {
   const [view, setView] = useState<View>({ name: 'list' });
+  const navigate = useNavigate();
   return (
     <div className="sq">
-      {view.name === 'list' && <List onOpen={(id) => setView({ name: 'detail', id })} onStartNew={() => (onStartNew ? onStartNew() : setView({ name: 'draft', draft: BLANK }))} />}
+      <CoverageTabs />
+      {view.name === 'list' && <List onOpen={(id) => setView({ name: 'detail', id })} onStartNew={() => navigate('/risk-details')} />}
       {view.name === 'detail' && <Detail id={view.id} onBack={() => setView({ name: 'list' })} onDuplicate={(draft) => setView({ name: 'draft', draft })} />}
       {view.name === 'draft' && <Draft draft={view.draft} onCancel={() => setView({ name: 'list' })} onSaved={(q) => setView({ name: 'detail', id: q.id })} />}
     </div>
