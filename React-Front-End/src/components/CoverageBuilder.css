@@ -251,6 +251,32 @@
   text-align: right;
 }
 
+.coverage-builder-card-skeleton {
+  animation: coverage-fade-in 180ms ease-out;
+}
+
+.coverage-skeleton {
+  display: inline-block;
+  height: 0.8em;
+  border-radius: 4px;
+  background: linear-gradient(90deg, #eeeaf2 25%, #f7f5f9 50%, #eeeaf2 75%);
+  background-size: 200% 100%;
+  animation: coverage-shimmer 1.4s ease-in-out infinite;
+}
+
+.coverage-skeleton-label {
+  width: 58px;
+}
+
+.coverage-skeleton-value {
+  width: 48px;
+}
+
+.coverage-skeleton-total {
+  width: 82px;
+  height: 1em;
+}
+
 .coverage-builder-card-price {
   display: flex;
   align-items: baseline;
@@ -598,6 +624,21 @@
   }
 }
 
+@keyframes coverage-shimmer {
+  to {
+    background-position: -200% 0;
+  }
+}
+
+@keyframes coverage-fade-in {
+  from {
+    opacity: 0.55;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
 @media (max-width: 760px) {
   .coverage-page {
     width: min(100% - 32px, 620px);
@@ -662,7 +703,9 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .coverage-spinner {
+  .coverage-spinner,
+  .coverage-skeleton,
+  .coverage-builder-card-skeleton {
     animation: none;
   }
 }

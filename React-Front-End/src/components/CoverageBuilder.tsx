@@ -152,9 +152,34 @@ export default function CoverageBuilder() {
                       <small>annual estimate</small>
                     </span>
                   </>
+                ) : isLoading ? (
+                  <>
+                    <dl
+                      className="coverage-builder-card-breakdown coverage-builder-card-skeleton"
+                      aria-hidden="true"
+                    >
+                      {["liability", "collision", "comprehensive"].map((item) => (
+                        <div key={item}>
+                          <dt>
+                            <span className="coverage-skeleton coverage-skeleton-label" />
+                          </dt>
+                          <dd>
+                            <span className="coverage-skeleton coverage-skeleton-value" />
+                          </dd>
+                        </div>
+                      ))}
+                    </dl>
+                    <span
+                      className="coverage-builder-card-price coverage-builder-card-skeleton"
+                      aria-hidden="true"
+                    >
+                      <span className="coverage-skeleton coverage-skeleton-total" />
+                      <small>annual estimate</small>
+                    </span>
+                  </>
                 ) : (
                   <span className="coverage-builder-card-price">
-                    Calculating…
+                    Price unavailable
                   </span>
                 )}
               </label>
