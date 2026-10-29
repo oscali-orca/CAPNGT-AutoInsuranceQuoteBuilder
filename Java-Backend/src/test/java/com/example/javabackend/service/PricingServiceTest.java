@@ -20,7 +20,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class PricingServiceTest {
-    private final PricingService service = new PricingService();
+    private final PricingService service = PricingTestConfiguration.pricingService();
 
     @Test
     void benchmarkReturnsAllThreeAnnualUsdPackages() {
