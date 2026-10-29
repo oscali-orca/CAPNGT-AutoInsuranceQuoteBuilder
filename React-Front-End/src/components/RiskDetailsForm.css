@@ -1,0 +1,151 @@
+
+.risk-details-page {
+  max-width: 1240px;
+  margin: 40px auto;
+  padding: 0 24px;
+}
+
+.risk-details-title {
+    margin: 0 0 8px;
+    color: var(--text-h);
+    font-size: clamp(34px, 5vw, 48px);
+    font-weight: 500;
+    letter-spacing: -1px;
+    line-height: 1.15;
+}
+
+.risk-details-subtitle {
+    margin: 0 0 36px;
+    color: var(--text);
+    font-size: 16px;
+    line-height: 1.55;
+}
+
+.risk-details-form {
+  width: 100%;
+}
+
+.risk-details-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 30px 36px;
+}
+
+.risk-field {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.risk-field label {
+  font-size: 1rem;
+  font-weight: 600;
+  color: #201a28;
+}
+
+.risk-field input {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 16px 18px;
+  font-size: 1rem;
+  border: 1px solid #d8d3df;
+  border-radius: 8px;
+  background: white;
+  color: #201a28;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.risk-field input:focus {
+  outline: none;
+  border-color: #a632f5;
+  box-shadow: 0 0 0 3px #a632f522;
+}
+
+.risk-field input[aria-invalid="true"] {
+  border-color: #dc2626;
+}
+
+.risk-field small {
+  font-size: 0.875rem;
+  color: #6b6178;
+}
+
+.risk-field-error {
+  color: #dc2626;
+}
+
+.risk-details-button {
+  margin-top: 36px;
+  padding: 17px 24px;
+  background: #a632f5;
+  color: white;
+  border: none;
+  border-radius: 7px;
+  font-size: 1rem;
+  font-weight: 500;
+  cursor: pointer;
+}
+
+.risk-details-button:hover {
+  background: #9027df;
+}
+
+.risk-details-button:focus-visible {
+  outline: 3px solid #6d28d9;
+  outline-offset: 3px;
+}
+
+.risk-details-customer {
+  color: #6b6178;
+  margin-bottom: 20px;
+}
+
+.risk-details-api-error {
+  color: #dc2626;
+}
+
+@media (max-width: 700px) {
+  .risk-details-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .risk-details-page {
+    margin: 24px auto;
+    padding: 0 16px;
+  }
+}
+
+/*logout button*/
+.coverage-tabs .coverage-logout-button {
+    margin-left: auto;
+    margin-bottom: 8px;
+    padding: 8px 14px;
+    border: 1px solid var(--border);
+    border-radius: 5px;
+    background: white;
+    color: var(--text-h);
+    font: inherit;
+    font-size: 13px;
+    cursor: pointer;
+}
+
+.coverage-tabs .coverage-logout-button:hover {
+    border-color: var(--accent-border);
+    background: var(--accent-bg);
+}
+
+.coverage-tabs .coverage-logout-button:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+.coverage-tabs .coverage-logout-button:focus-visible {
+    outline: 2px solid var(--accent-border);
+    outline-offset: 3px;
+}
+
+.coverage-logout-error {
+    color: #9b2d27;
+    font-size: 13px;
+    margin-bottom: 12px;
+}
