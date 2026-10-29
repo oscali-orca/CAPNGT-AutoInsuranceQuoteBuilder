@@ -3,6 +3,9 @@ import {useQuoteDraft} from "../context/QuoteDraftContext";
 import type {RiskDetails} from "../types/quote";
 import {useNavigate} from "react-router-dom";
 import {getCurrentSession, getQuoteConfig} from "../services/quoteApi";
+import "./RiskDetailsForm.css";
+import CoverageTabs from "./CoverageTabs";
+import "./CoverageBuilder.css";
 
 type RiskField = keyof RiskDetails; //4 fields that are customer's risk details, keyof makes ts type w/property names of interface driverAge|vehicleAge\annualMileage|priorClaims
 type FormValues = Record<RiskField, string>; //Record makes object type w/ <property key, porperty val> 
@@ -172,57 +175,76 @@ export default function RiskDetailsForm() {
     console.log("Validated risk details:", validatedDetails); //Coverage builder navigation
   }
 
-    return (
-        <section style={{ maxWidth: "900px", margin: "40px auto", padding: "0 24px",}}>
-            <h1> Vehicle & Driver Details</h1>
-            <p>Step 1: Enter the details for your training estimate.</p>
-            
-            {/*show signed in customer */}
-            {customerName && <p>Customer: {customerName}</p>}
+    
+return (
+    <section className="risk-details-page">
+        <CoverageTabs />
+        
+        <h1 className="risk-details-title">
+            Vehicle &amp; Driver Details
+        </h1>
 
-            {/*show errors if API request fails*/}
-            {apiError && (
-                <p role="alert" style={{ color: "crimson" }}>
-                    {apiError}
-                </p>
-            )}
-            
-            {/*noValidate lets us use custom field messages*/}
-            <form onSubmit={handleSubmit} noValidate style={{maxWidth: "500px", margin: "30px auto",}}> 
+        <p className="risk-details-subtitle">
+            Step 1: Enter the details for your training estimate.
+        </p>
+
+        {/*show signed in customer */}
+        {customerName && (
+            <p className="risk-details-customer">
+                Customer: {customerName}
+            </p>
+        )}
+
+        {/*show errors if API request fails*/}
+        {apiError && (
+            <p role="alert" className="risk-details-api-error">
+                {apiError}
+            </p>
+        )}
+
+        {/*noValidate lets us use custom field messages*/}
+        <form
+            onSubmit={handleSubmit}
+            noValidate
+            className="risk-details-form"
+        >
+            {/*display four fields in a two-column grid*/}
+            <div className="risk-details-grid">
                 {fields.map(field => {
-                    const rule=fieldRules[field];
+                    const rule = fieldRules[field];
 
                     //use frontend error first, then show backend error
                     const errorMessage = errors[field] ?? backendErrors[field];
 
                     return (
-                        <div key={field} style={{marginBottom: "20px"}}>
-                            <label htmlFor={field}>{rule.label}</label>
-                            
+                        <div key={field} className="risk-field">
+                            <label htmlFor={field}>
+                                {rule.label}
+                            </label>
+
                             {/*controlled input - value comes from react state*/}
                             <input
                                 id={field}
-                                name = {field}
+                                name={field}
                                 type="text"
                                 inputMode="numeric"
                                 value={values[field]}
-                                onChange={(event) => 
+                                onChange={(event) =>
                                     handleChange(field, event.target.value)
                                 }
                                 aria-invalid={Boolean(errorMessage)}
                                 aria-describedby={`${field}-message`}
-                                style={{
-                                    display:"block",
-                                    padding: "12px",
-                                    width: "100%",
-                                    marginTop: "8px",
-                                    boxSizing: "border-box",
-                                }}
                             />
+
                             {/*display error message or hint below the input*/}
                             <small id={`${field}-message`}>
                                 {errorMessage ? (
-                                    <span style={{ color: "crimson" }}>{errorMessage}</span>
+                                    <span
+                                        className="risk-field-error"
+                                        role="alert"
+                                    >
+                                        {errorMessage}
+                                    </span>
                                 ) : (
                                     rule.hint
                                 )}
@@ -230,9 +252,18 @@ export default function RiskDetailsForm() {
                         </div>
                     );
                 })}
-                <button type="submit">Continue to Coverage</button>
-            </form>
-        </section>
-    );
+            </div>
+
+            {/*submit validated risk details and continue to coverage builder*/}
+            <button
+                type="submit"
+                className="risk-details-button"
+            >
+                Continue to Coverage
+            </button>
+        </form>
+    </section>
+);
 }
+
 
