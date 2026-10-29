@@ -32,7 +32,7 @@ public class ApiValidationExceptionHandler {
             return ResponseEntity.badRequest().body(new ApiError(
                     "VALIDATION_ERROR",
                     "Invalid details",
-                    Map.of(responseField, fieldLabel(field) + " must be a whole number")));
+                    Map.of(responseField, fieldLabel(field) + " must be a whole non-negative number")));
         }
         return ResponseEntity.badRequest().body(new ApiError(
                 "INVALID_REQUEST_BODY",
