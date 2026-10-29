@@ -1,36 +1,38 @@
 
 .sq {
-  max-width: 1440px;
-  margin: 0 auto;
-  padding: 16px 22px;
-  color: #252a27;
+  color: var(--text-h);
+  font-family: var(--sans);
   font-size: 14px;
-  line-height: 1.4;
+  line-height: 1.5;
 }
 
 .sq h2 {
   margin: 0 0 4px;
-  font-size: 24px;
-  font-weight: 650;
-  letter-spacing: -0.5px;
+  color: var(--text-h);
+  font-size: clamp(30px, 4vw, 40px);
+  font-weight: 500;
+  letter-spacing: -1px;
+  line-height: 1.2;
 }
 
 .sq h3 {
   margin: 20px 0 8px;
-  font-size: 17px;
-  font-weight: 600;
+  color: var(--text-h);
+  font-size: 20px;
+  font-weight: 500;
 }
 
 .sq .sub {
-  color: #687069;
+  color: var(--text);
   margin: 0;
-  font-size: 13px;
+  font-size: 15px;
+  line-height: 1.55;
 }
 
 .sq .muted,
 .sq .hint,
 .sq .formula {
-  color: #737a74;
+  color: var(--text);
   font-size: 12px;
 }
 
@@ -47,34 +49,35 @@
   font: inherit;
   font-size: 13px;
   padding: 8px 13px;
-  border: 1px solid #d4d8d3;
-  border-radius: 6px;
+  border: 1px solid var(--border);
+  border-radius: 5px;
   background: #fff;
-  color: #18266c;
+  color: var(--text-h);
   cursor: pointer;
   transition: background 0.15s, border-color 0.15s;
 }
 
 .sq button:hover:not(:disabled) {
-  background: #f3f5f2;
-  border-color: #aeb7ae;
+  background: var(--accent-bg);
+  border-color: var(--accent-border);
 }
 
 .sq button.primary {
-  background: #303a47;
-  border-color: #303a47;
+  background: var(--accent);
+  border-color: var(--accent);
   color: #fff;
 }
 
 .sq button.primary:hover:not(:disabled) {
-  background: #24382c;
+  background: #8426c9;
+  border-color: #8426c9;
 }
 
 .sq button.link {
   border: 0;
   background: none;
   padding: 2px 0;
-  color: #30473a;
+  color: var(--accent);
   text-decoration: underline;
 }
 
@@ -84,36 +87,36 @@
 }
 
 .sq :focus-visible {
-  outline: 2px solid #527b60;
+  outline: 2px solid var(--accent-border);
   outline-offset: 2px;
 }
 
 .sq .wrap {
   width: 100%;
   overflow-x: auto;
-  border: 1px solid #e1e5df;
+  border: 1px solid var(--border);
   border-radius: 8px;
 }
 
 .sq table {
   width: 100%;
   border-collapse: collapse;
-  font-size: 13px;
+  font-size: 14px;
 }
 
 .sq th {
-  background: #f3f5f1;
-  color: #586159;
+  background: var(--accent-bg);
+  color: var(--text-h);
   text-align: left;
   padding: 10px 12px;
-  font-size: 12px;
+  font-size: 13px;
   font-weight: 600;
   white-space: nowrap;
 }
 
 .sq td {
   padding: 10px 12px;
-  border-bottom: 1px solid #e8ebe6;
+  border-bottom: 1px solid var(--border);
   vertical-align: middle;
 }
 
@@ -122,12 +125,12 @@
 }
 
 .sq tbody tr:hover {
-  background: #fafbf9;
+  background: rgba(170, 59, 255, 0.035);
 }
 
 .sq td small {
   display: block;
-  color: #737a74;
+  color: var(--text);
   font-size: 11px;
   margin-top: 3px;
 }
@@ -138,11 +141,11 @@
 
 .sq .cmp td,
 .sq .cmp thead th {
-  border-left: 1px solid #e8ebe6;
+  border-left: 1px solid var(--border);
 }
 
 .sq .cmp .sel {
-  background: #f3f6f1;
+  background: var(--accent-bg);
 }
 
 .sq .cmp tr.total td,
@@ -152,7 +155,7 @@
 
 .sq .alert {
   border-left: 3px solid #b3261e;
-  border-radius: 4px;
+  border-radius: 5px;
   background: #fff1ef;
   padding: 9px 12px;
   margin: 12px 0;
@@ -160,9 +163,9 @@
 }
 
 .sq .note {
-  border: 1px solid #e1e5df;
+  border: 1px solid var(--border);
   border-radius: 6px;
-  background: #f6f7f4;
+  background: var(--accent-bg);
   padding: 10px 12px;
   margin: 0 0 14px;
   font-size: 13px;
@@ -173,18 +176,18 @@
   gap: 22px;
   flex-wrap: wrap;
   padding: 10px 0;
-  border-bottom: 1px solid #e1e5df;
+  border-bottom: 1px solid var(--border);
   margin-bottom: 14px;
   font-size: 12px;
 }
 
 .sq .strip span {
-  color: #737a74;
+  color: var(--text);
 }
 
 .sq .strip b {
   font-weight: 600;
-  color: #303630;
+  color: var(--text-h);
   margin-left: 4px;
 }
 
@@ -202,9 +205,9 @@
 }
 
 .sq .aside {
-  border: 1px solid #e1e5df;
+  border: 1px solid var(--border);
   border-radius: 8px;
-  background: #f6f7f4;
+  background: var(--accent-bg);
   padding: 14px;
 }
 
@@ -214,7 +217,7 @@
 
 .sq label.field {
   display: block;
-  font-size: 13px;
+  font-size: 14px;
   font-weight: 600;
 }
 
@@ -227,17 +230,18 @@
   padding: 9px 10px;
   font: inherit;
   font-size: 13px;
-  border: 1px solid #d2d8d0;
+  border: 1px solid var(--border);
   border-radius: 5px;
   background: #fff;
-  color: #252a27;
+  color: var(--text-h);
 }
 
 .sq label.field input:focus,
 .sq label.field select:focus {
-  border-color: #527b60;
-  outline: none;
-  box-shadow: 0 0 0 2px #527b6020;
+  border-color: var(--accent-border);
+  outline: 2px solid var(--accent-border);
+  outline-offset: 2px;
+  box-shadow: none;
 }
 
 .sq .hint {
@@ -264,10 +268,6 @@
 }
 
 @media (max-width: 760px) {
-  .sq {
-    padding: 12px;
-  }
-
   .sq .layout {
     grid-template-columns: 1fr;
     gap: 16px;

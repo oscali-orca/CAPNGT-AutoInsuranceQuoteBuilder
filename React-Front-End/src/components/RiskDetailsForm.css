@@ -1,0 +1,89 @@
+.risk-details-form {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 20px 24px;
+  max-width: 720px;
+  margin: 0;
+  padding: 22px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: #fff;
+  box-shadow: var(--shadow);
+}
+
+.risk-details-field {
+  min-width: 0;
+}
+
+.risk-details-field label {
+  display: block;
+  color: var(--text-h);
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.risk-details-field input {
+  display: block;
+  width: 100%;
+  box-sizing: border-box;
+  min-height: 44px;
+  margin-top: 7px;
+  padding: 9px 12px;
+  border: 1px solid var(--border);
+  border-radius: 5px;
+  background: #fff;
+  color: var(--text-h);
+  font: inherit;
+  font-size: 14px;
+  transition: border-color 150ms ease, box-shadow 150ms ease;
+}
+
+.risk-details-field input:focus-visible {
+  border-color: var(--accent-border);
+  outline: 2px solid var(--accent-border);
+  outline-offset: 2px;
+}
+
+.risk-details-field input[aria-invalid="true"] {
+  border-color: #b3261e;
+}
+
+.risk-details-hint,
+.risk-details-error-text {
+  display: block;
+  margin-top: 5px;
+  font-size: 12px;
+  line-height: 1.4;
+}
+
+.risk-details-hint {
+  color: var(--text);
+}
+
+.risk-details-error-text,
+.risk-details-error {
+  color: #b3261e;
+}
+
+.risk-details-form .coverage-button {
+  justify-self: start;
+  grid-column: 1 / -1;
+}
+
+.risk-details-error {
+  max-width: 720px;
+  margin: 0 0 16px;
+  padding: 10px 12px;
+  border-left: 3px solid #b3261e;
+  border-radius: 4px;
+  background: #fff1ef;
+  font-size: 14px;
+}
+
+@media (max-width: 600px) {
+  .risk-details-form {
+    grid-template-columns: 1fr;
+    gap: 16px;
+    padding: 16px;
+  }
+}

@@ -2,7 +2,9 @@ import {useState, useEffect, type FormEvent} from "react";
 import {useQuoteDraft} from "../context/QuoteDraftContext";
 import type {RiskDetails} from "../types/quote";
 import {useNavigate} from "react-router-dom";
-import {getCurrentSession, getQuoteConfig} from "../services/quoteApi";
+import {getQuoteConfig} from "../services/quoteApi";
+import CoverageTabs from "./CoverageTabs";
+import "./RiskDetailsForm.css";
 
 type RiskField = keyof RiskDetails; //4 fields that are customer's risk details, keyof makes ts type w/property names of interface driverAge|vehicleAge\annualMileage|priorClaims
 type FormValues = Record<RiskField, string>; //Record makes object type w/ <property key, porperty val> 
@@ -62,7 +64,7 @@ function validateField(
 
     //only allows whole numbers
     if(!/^\d+$/.test(value)) {
-        return `${rule.label} must be a whole number`;
+        return `${rule.label} must be a whole non-negative number`;
     }
 
     const number = Number(value);
@@ -96,15 +98,11 @@ export default function RiskDetailsForm() {
 
     //state error info from backend
     const[apiError, setApiError] = useState("");
-    const [customerName, setCustomerName] = useState("");
 
-    //load signed in customer and their active quote information
+    //load active quote information
     useEffect(() => {
         async function loadInitalData() {
             try{
-                const session = await getCurrentSession();
-                setCustomerName(session.display_name);
-
                 const quoteConfig = await getQuoteConfig();
                 console.log("Active quote config:", quoteConfig);
             } catch (error) {
@@ -173,22 +171,24 @@ export default function RiskDetailsForm() {
   }
 
     return (
-        <section style={{ maxWidth: "900px", margin: "40px auto", padding: "0 24px",}}>
-            <h1> Vehicle & Driver Details</h1>
-            <p>Step 1: Enter the details for your training estimate.</p>
+        <main className="coverage-page">
+            <CoverageTabs />
+            <div className="coverage-page-heading">
+                <div>
+                    <h1>Vehicle &amp; Driver Details</h1>
+                    <p className="coverage-subtitle">Step 1 · Enter the details for your training estimate.</p>
+                </div>
+            </div>
             
-            {/*show signed in customer */}
-            {customerName && <p>Customer: {customerName}</p>}
-
             {/*show errors if API request fails*/}
             {apiError && (
-                <p role="alert" style={{ color: "crimson" }}>
+                <p className="risk-details-error" role="alert">
                     {apiError}
                 </p>
             )}
             
             {/*noValidate lets us use custom field messages*/}
-            <form onSubmit={handleSubmit} noValidate style={{maxWidth: "500px", margin: "30px auto",}}> 
+            <form className="risk-details-form" onSubmit={handleSubmit} noValidate>
                 {fields.map(field => {
                     const rule=fieldRules[field];
 
@@ -196,7 +196,7 @@ export default function RiskDetailsForm() {
                     const errorMessage = errors[field] ?? backendErrors[field];
 
                     return (
-                        <div key={field} style={{marginBottom: "20px"}}>
+                        <div className="risk-details-field" key={field}>
                             <label htmlFor={field}>{rule.label}</label>
                             
                             {/*controlled input - value comes from react state*/}
@@ -211,18 +211,11 @@ export default function RiskDetailsForm() {
                                 }
                                 aria-invalid={Boolean(errorMessage)}
                                 aria-describedby={`${field}-message`}
-                                style={{
-                                    display:"block",
-                                    padding: "12px",
-                                    width: "100%",
-                                    marginTop: "8px",
-                                    boxSizing: "border-box",
-                                }}
                             />
                             {/*display error message or hint below the input*/}
-                            <small id={`${field}-message`}>
+                            <small className={errorMessage ? "risk-details-error-text" : "risk-details-hint"} id={`${field}-message`}>
                                 {errorMessage ? (
-                                    <span style={{ color: "crimson" }}>{errorMessage}</span>
+                                    errorMessage
                                 ) : (
                                     rule.hint
                                 )}
@@ -230,9 +223,8 @@ export default function RiskDetailsForm() {
                         </div>
                     );
                 })}
-                <button type="submit">Continue to Coverage</button>
+                <button className="coverage-button coverage-button-dark" type="submit">Continue to Coverage</button>
             </form>
-        </section>
+        </main>
     );
 }
-

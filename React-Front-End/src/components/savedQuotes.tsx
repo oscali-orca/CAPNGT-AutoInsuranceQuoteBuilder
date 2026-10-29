@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useRef, useState, type FormEvent } from 'react';
 import './savedQuotes.css';
+import CoverageTabs from './CoverageTabs';
 import { ApiError, compare, duplicateQuote, getQuote, listQuotes, saveQuote } from '../services/savedQuotesApi';
 import type { Breakdown, Comparison, PackageCode, QuoteDraft, RiskFactors, RiskInputs, SavedQuoteDetail } from '../types/savedQuotes';
 
@@ -263,13 +264,19 @@ function Draft({ draft, onCancel, onSaved }: { draft: QuoteDraft; onCancel: () =
 
 type View = { name: 'list' } | { name: 'detail'; id: string } | { name: 'draft'; draft: QuoteDraft };
 
-export default function SavedQuotes({ onStartNew }: { onStartNew?: () => void }) {
+export default function SavedQuotes({ onStartNew, onDuplicate }: {
+  onStartNew?: () => void;
+  onDuplicate?: (draft: QuoteDraft) => void;
+}) {
   const [view, setView] = useState<View>({ name: 'list' });
   return (
-    <div className="sq">
-      {view.name === 'list' && <List onOpen={(id) => setView({ name: 'detail', id })} onStartNew={() => (onStartNew ? onStartNew() : setView({ name: 'draft', draft: BLANK }))} />}
-      {view.name === 'detail' && <Detail id={view.id} onBack={() => setView({ name: 'list' })} onDuplicate={(draft) => setView({ name: 'draft', draft })} />}
-      {view.name === 'draft' && <Draft draft={view.draft} onCancel={() => setView({ name: 'list' })} onSaved={(q) => setView({ name: 'detail', id: q.id })} />}
-    </div>
+    <main className="coverage-page">
+      <CoverageTabs />
+      <div className="sq">
+        {view.name === 'list' && <List onOpen={(id) => setView({ name: 'detail', id })} onStartNew={() => (onStartNew ? onStartNew() : setView({ name: 'draft', draft: BLANK }))} />}
+        {view.name === 'detail' && <Detail id={view.id} onBack={() => setView({ name: 'list' })} onDuplicate={(draft) => (onDuplicate ? onDuplicate(draft) : setView({ name: 'draft', draft }))} />}
+        {view.name === 'draft' && <Draft draft={view.draft} onCancel={() => setView({ name: 'list' })} onSaved={(q) => setView({ name: 'detail', id: q.id })} />}
+      </div>
+    </main>
   );
 }
