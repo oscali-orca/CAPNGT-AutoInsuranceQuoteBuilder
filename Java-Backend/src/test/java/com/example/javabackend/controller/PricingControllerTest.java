@@ -1,6 +1,6 @@
 package com.example.javabackend.controller;
 
-import com.example.javabackend.service.PricingService;
+import com.example.javabackend.service.PricingTestConfiguration;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -41,7 +41,8 @@ class PricingControllerTest {
     void setUp() {
         validator = new LocalValidatorFactoryBean();
         validator.afterPropertiesSet();
-        mvc = MockMvcBuilders.standaloneSetup(new PricingController(new PricingService()))
+        mvc = MockMvcBuilders.standaloneSetup(
+                        new PricingController(PricingTestConfiguration.pricingService()))
                 .setControllerAdvice(new ApiValidationExceptionHandler())
                 .setValidator(validator)
                 .setMessageConverters(new JacksonJsonHttpMessageConverter(mapper)).build();
