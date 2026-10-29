@@ -65,7 +65,7 @@ function validateField(
 
     //only allows whole numbers
     if(!/^\d+$/.test(value)) {
-        return `${rule.label} must be a whole number`;
+        return `${rule.label} must be a whole non-negative number`;
     }
 
     const number = Number(value);
