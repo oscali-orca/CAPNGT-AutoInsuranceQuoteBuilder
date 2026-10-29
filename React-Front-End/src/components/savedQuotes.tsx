@@ -2,6 +2,8 @@ import { useCallback, useEffect, useRef, useState, type FormEvent } from 'react'
 import './savedQuotes.css';
 import { ApiError, compare, duplicateQuote, getQuote, listQuotes, saveQuote } from '../services/savedQuotesApi';
 import type { Breakdown, Comparison, PackageCode, QuoteDraft, RiskFactors, RiskInputs, SavedQuoteDetail } from '../types/savedQuotes';
+import CoverageTabs from "./CoverageTabs";
+import "./CoverageBuilder.css";
 
 const money = (n: number) => new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(n);
 const when = (iso: string) => new Date(iso).toLocaleString('en-US', { dateStyle: 'medium', timeStyle: 'short' });
@@ -266,10 +268,13 @@ type View = { name: 'list' } | { name: 'detail'; id: string } | { name: 'draft';
 export default function SavedQuotes({ onStartNew }: { onStartNew?: () => void }) {
   const [view, setView] = useState<View>({ name: 'list' });
   return (
-    <div className="sq">
-      {view.name === 'list' && <List onOpen={(id) => setView({ name: 'detail', id })} onStartNew={() => (onStartNew ? onStartNew() : setView({ name: 'draft', draft: BLANK }))} />}
-      {view.name === 'detail' && <Detail id={view.id} onBack={() => setView({ name: 'list' })} onDuplicate={(draft) => setView({ name: 'draft', draft })} />}
-      {view.name === 'draft' && <Draft draft={view.draft} onCancel={() => setView({ name: 'list' })} onSaved={(q) => setView({ name: 'detail', id: q.id })} />}
-    </div>
+    <main className="coverage-page">
+      <CoverageTabs/>
+      <div className="sq">
+        {view.name === 'list' && <List onOpen={(id) => setView({ name: 'detail', id })} onStartNew={() => (onStartNew ? onStartNew() : setView({ name: 'draft', draft: BLANK }))} />}
+        {view.name === 'detail' && <Detail id={view.id} onBack={() => setView({ name: 'list' })} onDuplicate={(draft) => setView({ name: 'draft', draft })} />}
+        {view.name === 'draft' && <Draft draft={view.draft} onCancel={() => setView({ name: 'list' })} onSaved={(q) => setView({ name: 'detail', id: q.id })} />}
+      </div>
+    </main>
   );
 }

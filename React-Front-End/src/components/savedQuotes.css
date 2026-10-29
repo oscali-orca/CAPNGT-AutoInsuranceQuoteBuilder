@@ -56,18 +56,19 @@
 }
 
 .sq button:hover:not(:disabled) {
-  background: #f3f5f2;
-  border-color: #aeb7ae;
+  background: #f5f0ff;
+  border-color: var(--accent);
 }
 
 .sq button.primary {
-  background: #303a47;
-  border-color: #303a47;
+  background: var(--accent);
+  border-color: var(--accent);
   color: #fff;
 }
 
 .sq button.primary:hover:not(:disabled) {
-  background: #24382c;
+  background: #5b21b6;
+  border-color: #5b21b6;
 }
 
 .sq button.link {
