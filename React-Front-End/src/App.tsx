@@ -1,11 +1,13 @@
 
-import { BrowserRouter, Navigate, Route, Routes, useNavigate } from "react-router-dom";
+import { BrowserRouter, Navigate, Route, Routes, useNavigate, Outlet } from "react-router-dom";
 import SavedQuotes from "./components/savedQuotes";
 import RiskDetailsForm from "./components/RiskDetailsForm";
 import CoverageBuilder from "./components/CoverageBuilder";
 import CoverageComparison from "./components/CoverageComparison";
 import LoginPage from "./features/auth/LoginPage";
 import "./App.css";
+import ProtectedRoute from "./components/ProtectedRoute";
+
 
 function AppRoutes() {
   const navigate = useNavigate();
@@ -14,17 +16,26 @@ function AppRoutes() {
     <Routes>
       <Route path="/" element={<Navigate to="/login" replace />} />
       <Route path="/login" element={<LoginRoute />} />
-      <Route path="/risk-details" element={<RiskDetailsForm />} />
-      <Route path="/coverage" element={<CoverageBuilder />} />
-      <Route path="/comparison" element={<CoverageComparison />} />
-      <Route
-        path="/saved-quotes"
+
+      {/*all pages require authentication*/}
+      <Route 
         element={
-          <SavedQuotes
-            onStartNew={() => navigate("/risk-details")}
-          />
+          <ProtectedRoute>
+            <Outlet />
+          </ProtectedRoute>
         }
-      />
+      >
+        <Route path="/risk-details" element={<RiskDetailsForm />} />
+        <Route path="/coverage" element={<CoverageBuilder />} />
+        <Route path="/comparison" element={<CoverageComparison />} />
+        <Route
+          path="/saved-quotes"
+          element={
+            <SavedQuotes onStartNew={() => navigate("/risk-details")}/>
+          }
+        />
+      </Route>
+      
       <Route path="*" element={<Navigate to="/login" replace />} />
     </Routes>
   );
